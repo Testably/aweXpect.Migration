@@ -60,34 +60,34 @@ namespace aweXpect.Migration.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Migrate fluentassertions to aweXpect.
+        ///   Looks up a localized string similar to Migrate FluentAssertions to aweXpect.
         /// </summary>
         internal static string aweXpectM002CodeFixTitle {
             get {
                 return ResourceManager.GetString("aweXpectM002CodeFixTitle", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to Migrate the assertions from fluentassertions to aweXpect.
+        ///   Looks up a localized string similar to Migrate the assertions from FluentAssertions to aweXpect.
         /// </summary>
         internal static string aweXpectM002Description {
             get {
                 return ResourceManager.GetString("aweXpectM002Description", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to fluentassertions should be migrated to aweXpect.
+        ///   Looks up a localized string similar to FluentAssertions assertion should be migrated to aweXpect.
         /// </summary>
         internal static string aweXpectM002MessageFormat {
             get {
                 return ResourceManager.GetString("aweXpectM002MessageFormat", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to fluentassertions should not be used.
+        ///   Looks up a localized string similar to Migration available: FluentAssertions assertion.
         /// </summary>
         internal static string aweXpectM002Title {
             get {

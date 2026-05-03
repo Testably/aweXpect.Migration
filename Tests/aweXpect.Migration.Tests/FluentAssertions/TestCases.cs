@@ -373,7 +373,7 @@ public static class TestCases
 	}
 
 	/// <summary>
-	///     Legacy expectations on fluentassertions 7.2.x
+	///     Legacy expectations on FluentAssertions 7.2.x
 	/// </summary>
 	public static TheoryData<string, string, string, bool> Legacy()
 	{
