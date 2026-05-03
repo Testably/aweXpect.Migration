@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace aweXpect.Migration.Analyzers;
 
 /// <summary>
-///     An analyzer that flags most assertions from fluentassertions.
+///     An analyzer that flags most assertions from FluentAssertions.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class FluentAssertionsAnalyzer : DiagnosticAnalyzer

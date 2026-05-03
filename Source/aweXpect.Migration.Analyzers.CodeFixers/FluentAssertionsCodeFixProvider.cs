@@ -14,7 +14,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace aweXpect.Migration.Analyzers;
 
 /// <summary>
-///     A code fix provider that migrates most assertions from fluentassertions to aweXpect.
+///     A code fix provider that migrates most assertions from FluentAssertions to aweXpect.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(FluentAssertionsCodeFixProvider))]
 [Shared]
