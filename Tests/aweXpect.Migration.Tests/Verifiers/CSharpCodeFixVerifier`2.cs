@@ -34,7 +34,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		{
 			TestCode = source,
 			CodeActionValidationMode = CodeActionValidationMode.SemanticStructure,
-			ReferenceAssemblies = ReferenceAssemblies.Net.Net80.AddPackages(
+			ReferenceAssemblies = ReferenceAssemblies.Net.Net100.AddPackages(
 			[
 				new PackageIdentity("xunit.v3", "1.1.0"),
 				new PackageIdentity("FluentAssertions", "8.2.0"),
@@ -76,7 +76,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		{
 			TestCode = source,
 			FixedCode = fixedSource,
-			ReferenceAssemblies = ReferenceAssemblies.Net.Net80.AddPackages(
+			ReferenceAssemblies = ReferenceAssemblies.Net.Net100.AddPackages(
 			[
 				new PackageIdentity("xunit.v3", "1.1.0"),
 				new PackageIdentity("FluentAssertions", "8.2.0"),
@@ -111,7 +111,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		{
 			TestCode = source,
 			FixedCode = fixedSource,
-			ReferenceAssemblies = ReferenceAssemblies.Net.Net80.AddPackages(
+			ReferenceAssemblies = ReferenceAssemblies.Net.Net100.AddPackages(
 			[
 				new PackageIdentity("xunit.v3", "1.1.0"),
 				new PackageIdentity("FluentAssertions", "7.2.0"),
