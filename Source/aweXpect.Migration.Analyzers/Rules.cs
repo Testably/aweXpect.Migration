@@ -2,13 +2,22 @@
 
 namespace aweXpect.Migration.Analyzers;
 
-internal static class Rules
+/// <summary>
+///     Diagnostic rules reported by the aweXpect migration analyzers.
+/// </summary>
+public static class Rules
 {
 	private const string UsageCategory = "Usage";
 
+	/// <summary>
+	///     Rule <c>aweXpectM002</c>: a FluentAssertions assertion was detected and can be migrated to aweXpect.
+	/// </summary>
 	public static readonly DiagnosticDescriptor FluentAssertionsRule =
 		CreateDescriptor("aweXpectM002", UsageCategory, DiagnosticSeverity.Warning);
 
+	/// <summary>
+	///     Rule <c>aweXpectM003</c>: an xUnit assertion was detected and can be migrated to aweXpect.
+	/// </summary>
 	public static readonly DiagnosticDescriptor XunitAssertionRule =
 		CreateDescriptor("aweXpectM003", UsageCategory, DiagnosticSeverity.Warning);
 

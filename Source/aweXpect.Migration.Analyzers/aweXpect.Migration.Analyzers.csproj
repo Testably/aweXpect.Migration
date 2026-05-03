@@ -22,7 +22,6 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="aweXpect.Migration.Analyzers.CodeFixers" PublicKey="$(PublicKey)"/>
-		<InternalsVisibleTo Include="aweXpect.Migration.Tests" PublicKey="$(PublicKey)"/>
 	</ItemGroup>
 
 	<ItemGroup>
