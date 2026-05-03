@@ -1,8 +1,6 @@
 <Solution>
   <Folder Name="/Pipeline/">
     <Project Path="Pipeline/Build.csproj">
-      <BuildType Project="?" />
-      <Platform Project="?" />
       <Build Project="false" />
     </Project>
   </Folder>
