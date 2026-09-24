@@ -66,26 +66,6 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		return document;
 	}
 
-	private static async Task<CompilationUnitSyntax> AddUsingIfMissing(Document document,
-		CompilationUnitSyntax compilationUnit, int position, string namespaceName, string typeName)
-	{
-		SemanticModel? semanticModel = await document.GetSemanticModelAsync();
-		if (semanticModel is null || !semanticModel.LookupNamespacesAndTypes(position, name: typeName).IsEmpty)
-		{
-			return compilationUnit;
-		}
-
-		string endOfLine = compilationUnit.ToFullString().Contains("\r\n") ? "\r\n" : "\n";
-		UsingDirectiveSyntax usingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(namespaceName))
-			.NormalizeWhitespace()
-			.WithTrailingTrivia(SyntaxFactory.EndOfLine(endOfLine));
-		UsingDirectiveSyntax? lastAweXpectUsing = compilationUnit.Usings
-			.LastOrDefault(u => u.Name?.ToString().StartsWith("aweXpect") == true);
-		return lastAweXpectUsing is null
-			? compilationUnit.AddUsings(usingDirective)
-			: compilationUnit.InsertNodesAfter(lastAweXpectUsing, [usingDirective,]);
-	}
-
 	private static bool IsString(ISymbol symbol)
 		=> symbol.Name.Equals(nameof(String), StringComparison.OrdinalIgnoreCase);
 

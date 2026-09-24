@@ -1,9 +1,12 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -60,4 +63,36 @@ public abstract class AssertionCodeFixProvider(DiagnosticDescriptor rule) : Code
 	/// </remarks>
 	protected abstract Task<Document> ConvertAssertionAsync(CodeFixContext context,
 		ExpressionSyntax expressionSyntax, CancellationToken cancellationToken);
+
+	/// <summary>
+	///     Adds a using directive for <paramref name="namespaceName" />, unless <paramref name="typeName" /> is already in
+	///     scope at <paramref name="position" />.
+	/// </summary>
+	protected static async Task<CompilationUnitSyntax> AddUsingIfMissing(Document document,
+		CompilationUnitSyntax compilationUnit, int position, string namespaceName, string typeName)
+	{
+		SemanticModel? semanticModel = await document.GetSemanticModelAsync().ConfigureAwait(false);
+		if (semanticModel is null || !semanticModel.LookupNamespacesAndTypes(position, name: typeName).IsEmpty)
+		{
+			return compilationUnit;
+		}
+
+		string endOfLine = compilationUnit.ToFullString().Contains("\r\n") ? "\r\n" : "\n";
+		UsingDirectiveSyntax usingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(namespaceName))
+			.NormalizeWhitespace()
+			.WithTrailingTrivia(SyntaxFactory.EndOfLine(endOfLine));
+		UsingDirectiveSyntax? followingUsing = compilationUnit.Usings
+			.FirstOrDefault(u => u.Name is not null && CompareUsings(u.Name.ToString(), namespaceName) > 0);
+		return followingUsing is null
+			? compilationUnit.AddUsings(usingDirective)
+			: compilationUnit.InsertNodesBefore(followingUsing, [usingDirective,]);
+
+		static int CompareUsings(string left, string right)
+		{
+			int systemOrder = IsSystem(right).CompareTo(IsSystem(left));
+			return systemOrder != 0 ? systemOrder : string.Compare(left, right, StringComparison.OrdinalIgnoreCase);
+		}
+
+		static bool IsSystem(string name) => name == "System" || name.StartsWith("System.");
+	}
 }

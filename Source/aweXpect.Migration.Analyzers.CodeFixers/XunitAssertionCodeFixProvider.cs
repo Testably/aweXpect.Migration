@@ -54,6 +54,12 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 
 		compilationUnit =
 			compilationUnit.ReplaceNode(expressionSyntax, newExpression.WithTriviaFrom(expressionSyntax));
+		if (newExpression.ToString().Contains("Math.Round("))
+		{
+			compilationUnit = await AddUsingIfMissing(document, compilationUnit, expressionSyntax.SpanStart,
+				"System", "Math");
+		}
+
 		return document.WithSyntaxRoot(compilationUnit);
 	}
 
@@ -64,15 +70,16 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 		SeparatedSyntaxList<ArgumentSyntax> argumentListArguments)
 	{
 		bool isGeneric = !string.IsNullOrEmpty(genericArgs);
+		SemanticModel? semanticModel = await context.Document.GetSemanticModelAsync();
+		IMethodSymbol? methodSymbol =
+			semanticModel?.GetSymbolInfo(memberAccessExpressionSyntax).Symbol as IMethodSymbol;
 
 		return method switch
 		{
-			"Equal" => await IsEqualTo(context, memberAccessExpressionSyntax, argumentListArguments, actual, expected),
-			"NotEqual" => await IsNotEqualTo(context, memberAccessExpressionSyntax, argumentListArguments, actual,
-				expected),
-			"Contains" => await Contains(context, memberAccessExpressionSyntax, actual, expected),
-			"DoesNotContain" => SyntaxFactory.ParseExpression(
-				$"Expect.That({actual}).DoesNotContain({expected})"),
+			"Equal" => Equality(methodSymbol, argumentListArguments, actual, expected, false),
+			"NotEqual" => Equality(methodSymbol, argumentListArguments, actual, expected, true),
+			"Contains" => Contains(methodSymbol, actual, expected, false),
+			"DoesNotContain" => Contains(methodSymbol, actual, expected, true),
 			"StartsWith" => SyntaxFactory.ParseExpression(
 				$"Expect.That({actual}).StartsWith({expected})"),
 			"EndsWith" => SyntaxFactory.ParseExpression(
@@ -105,16 +112,8 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 					$"Expect.That({actual}).IsNot<{genericArgs}>()")
 				: SyntaxFactory.ParseExpression(
 					$"Expect.That({actual}).IsNot({expected})"),
-			"IsType" => isGeneric
-				? SyntaxFactory.ParseExpression(
-					$"Expect.That({actual}).IsExactly<{genericArgs}>()")
-				: SyntaxFactory.ParseExpression(
-					$"Expect.That({actual}).IsExactly({expected})"),
-			"IsNotType" => isGeneric
-				? SyntaxFactory.ParseExpression(
-					$"Expect.That({actual}).IsNotExactly<{genericArgs}>()")
-				: SyntaxFactory.ParseExpression(
-					$"Expect.That({actual}).IsNotExactly({expected})"),
+			"IsType" => TypeCheck(argumentListArguments, genericArgs, false),
+			"IsNotType" => TypeCheck(argumentListArguments, genericArgs, true),
 			"Empty" => SyntaxFactory.ParseExpression(
 				$"Expect.That({actual}).IsEmpty()"),
 			"NotEmpty" => SyntaxFactory.ParseExpression(
@@ -123,84 +122,62 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 				$"Fail.Test({expected})"),
 			"Skip" => SyntaxFactory.ParseExpression(
 				$"Skip.Test({expected})"),
-			"Throws" or "ThrowsAsync" => isGeneric
-				? SyntaxFactory.ParseExpression(
-					$"Expect.That({actual}).ThrowsExactly<{genericArgs}>()")
-				: SyntaxFactory.ParseExpression(
-					$"Expect.That({actual}).ThrowsExactly({expected})"),
-			"ThrowsAny" or "ThrowsAnyAsync" => isGeneric
-				? SyntaxFactory.ParseExpression(
-					$"Expect.That({actual}).Throws<{genericArgs}>()")
-				: SyntaxFactory.ParseExpression(
-					$"Expect.That({actual}).Throws({expected})"),
+			"Throws" or "ThrowsAsync" => Throws(methodSymbol, argumentListArguments, genericArgs, true),
+			"ThrowsAny" or "ThrowsAnyAsync" => Throws(methodSymbol, argumentListArguments, genericArgs, false),
 			_ => null,
 		};
 	}
 #pragma warning restore S3776
 
-	private static async Task<ExpressionSyntax> IsNotEqualTo(CodeFixContext context,
-		MemberAccessExpressionSyntax memberAccessExpressionSyntax,
+	private static ExpressionSyntax Equality(IMethodSymbol? methodSymbol,
 		SeparatedSyntaxList<ArgumentSyntax> argumentListArguments,
 		ArgumentSyntax? actual,
-		ArgumentSyntax? expected)
+		ArgumentSyntax? expected,
+		bool negated)
 	{
-		if (argumentListArguments.Count >= 3)
+		string expectation = negated ? "IsNotEqualTo" : "IsEqualTo";
+		if (argumentListArguments.Count >= 3 && methodSymbol is { Parameters.Length: >= 3, })
 		{
-			ExpressionSyntax? thirdArgument = argumentListArguments[2].Expression;
-			SemanticModel? semanticModel = await context.Document.GetSemanticModelAsync();
-
-			ISymbol? symbol = semanticModel.GetSymbolInfo(memberAccessExpressionSyntax).Symbol;
-
-			if (symbol is IMethodSymbol { Parameters.Length: >= 3, } methodSymbol &&
-			    (methodSymbol.Parameters[2].Type.Name.Equals("Double", StringComparison.Ordinal) ||
-			     methodSymbol.Parameters[2].Type.Name.Equals("Float", StringComparison.Ordinal)))
+			ExpressionSyntax thirdArgument = argumentListArguments[2].Expression;
+			ITypeSymbol thirdParameterType = methodSymbol.Parameters[2].Type;
+			if (thirdParameterType.SpecialType is SpecialType.System_Double or SpecialType.System_Single ||
+			    thirdParameterType.Name == "TimeSpan")
 			{
 				return SyntaxFactory.ParseExpression(
-					$"Expect.That({actual}).IsNotEqualTo({expected}).Within({thirdArgument})");
+					$"Expect.That({actual}).{expectation}({expected}).Within({thirdArgument})");
+			}
+
+			// The precision rounds both values to decimal places, which no tolerance can express.
+			if (thirdParameterType.SpecialType == SpecialType.System_Int32 &&
+			    methodSymbol.Parameters[0].Type.SpecialType is SpecialType.System_Double
+				    or SpecialType.System_Single or SpecialType.System_Decimal)
+			{
+				string roundingArguments = $", {thirdArgument}" +
+				                           (argumentListArguments.Count >= 4
+					                           ? $", {argumentListArguments[3].Expression}"
+					                           : "");
+				return SyntaxFactory.ParseExpression(
+					$"Expect.That(Math.Round({actual?.Expression}{roundingArguments}))" +
+					$".{expectation}(Math.Round({expected?.Expression}{roundingArguments}))");
 			}
 		}
 
-		return SyntaxFactory.ParseExpression($"Expect.That({actual}).IsNotEqualTo({expected})");
+		return SyntaxFactory.ParseExpression($"Expect.That({actual}).{expectation}({expected})");
 	}
 
-	private static async Task<ExpressionSyntax> IsEqualTo(CodeFixContext context,
-		MemberAccessExpressionSyntax memberAccessExpressionSyntax,
-		SeparatedSyntaxList<ArgumentSyntax> argumentListArguments,
+	private static ExpressionSyntax Contains(
+		IMethodSymbol? methodSymbol,
 		ArgumentSyntax? actual,
-		ArgumentSyntax? expected)
+		ArgumentSyntax? expected,
+		bool negated)
 	{
-		if (argumentListArguments.Count >= 3)
+		if (IsDictionaryOverload(methodSymbol))
 		{
-			ExpressionSyntax? thirdArgument = argumentListArguments[2].Expression;
-			SemanticModel? semanticModel = await context.Document.GetSemanticModelAsync();
-
-			ISymbol? symbol = semanticModel.GetSymbolInfo(memberAccessExpressionSyntax).Symbol;
-
-			if (symbol is IMethodSymbol { Parameters.Length: >= 3, } methodSymbol &&
-			    (methodSymbol.Parameters[2].Type.Name.Equals("Double", StringComparison.Ordinal) ||
-			     methodSymbol.Parameters[2].Type.Name.Equals("Float", StringComparison.Ordinal) ||
-			     methodSymbol.Parameters[2].Type.Name.Equals("TimeSpan", StringComparison.Ordinal)))
-			{
-				return SyntaxFactory.ParseExpression(
-					$"Expect.That({actual}).IsEqualTo({expected}).Within({thirdArgument})");
-			}
+			return SyntaxFactory.ParseExpression(
+				$"Expect.That({actual}).{(negated ? "DoesNotContainKey" : "ContainsKey")}({expected})");
 		}
 
-		return SyntaxFactory.ParseExpression($"Expect.That({actual}).IsEqualTo({expected})");
-	}
-
-
-	private static async Task<ExpressionSyntax> Contains(
-		CodeFixContext context,
-		MemberAccessExpressionSyntax memberAccessExpressionSyntax,
-		ArgumentSyntax? actual,
-		ArgumentSyntax? expected)
-	{
-		SemanticModel? semanticModel = await context.Document.GetSemanticModelAsync();
-
-		ISymbol? symbol = semanticModel.GetSymbolInfo(memberAccessExpressionSyntax).Symbol;
-
-		if (symbol is IMethodSymbol { Parameters.Length: 2, } methodSymbol &&
+		if (methodSymbol is { Parameters.Length: 2, } &&
 		    methodSymbol.Parameters[0].Type.Name == "IEnumerable" &&
 		    methodSymbol.Parameters[1].Type.Name == "Predicate")
 		{
@@ -208,7 +185,71 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 			(actual, expected) = (expected, actual);
 		}
 
-		return SyntaxFactory.ParseExpression($"Expect.That({actual}).Contains({expected})");
+		return SyntaxFactory.ParseExpression(
+			$"Expect.That({actual}).{(negated ? "DoesNotContain" : "Contains")}({expected})");
+	}
+
+	/// <summary>
+	///     The overloads for dictionaries look up a key, whereas <c>Contains</c> in aweXpect looks for an entry.
+	/// </summary>
+	private static bool IsDictionaryOverload(IMethodSymbol? methodSymbol)
+		=> methodSymbol?.OriginalDefinition is { TypeParameters.Length: 2, Parameters.Length: 2, };
+
+	private static ExpressionSyntax? TypeCheck(
+		SeparatedSyntaxList<ArgumentSyntax> argumentListArguments,
+		string genericArgs,
+		bool negated)
+	{
+		bool isGeneric = !string.IsNullOrEmpty(genericArgs);
+		ArgumentSyntax? subject = argumentListArguments.ElementAtOrDefault(isGeneric ? 0 : 1);
+		ArgumentSyntax? exactMatch = argumentListArguments.ElementAtOrDefault(isGeneric ? 1 : 2);
+		bool isExactMatch = true;
+		if (exactMatch is not null)
+		{
+			if (!exactMatch.Expression.IsKind(SyntaxKind.TrueLiteralExpression) &&
+			    !exactMatch.Expression.IsKind(SyntaxKind.FalseLiteralExpression))
+			{
+				return null;
+			}
+
+			isExactMatch = exactMatch.Expression.IsKind(SyntaxKind.TrueLiteralExpression);
+		}
+
+		string expectation = (negated, isExactMatch) switch
+		{
+			(false, true) => "IsExactly",
+			(false, false) => "Is",
+			(true, true) => "IsNotExactly",
+			(true, false) => "IsNot",
+		};
+		return SyntaxFactory.ParseExpression(isGeneric
+			? $"Expect.That({subject?.Expression}).{expectation}<{genericArgs}>()"
+			: $"Expect.That({subject?.Expression}).{expectation}({argumentListArguments.ElementAtOrDefault(0)?.Expression})");
+	}
+
+	private static ExpressionSyntax Throws(
+		IMethodSymbol? methodSymbol,
+		SeparatedSyntaxList<ArgumentSyntax> argumentListArguments,
+		string genericArgs,
+		bool exactly)
+	{
+		string expectation = exactly ? "ThrowsExactly" : "Throws";
+		if (string.IsNullOrEmpty(genericArgs))
+		{
+			return SyntaxFactory.ParseExpression(
+				$"Expect.That({argumentListArguments.ElementAtOrDefault(1)}).{expectation}({argumentListArguments.ElementAtOrDefault(0)})");
+		}
+
+		if (methodSymbol is { Parameters.Length: > 1, } &&
+		    methodSymbol.Parameters[0].Type.SpecialType == SpecialType.System_String)
+		{
+			return SyntaxFactory.ParseExpression(
+				$"Expect.That({argumentListArguments.ElementAtOrDefault(1)?.Expression}).{expectation}<{genericArgs}>()" +
+				$".WithParamName({argumentListArguments.ElementAtOrDefault(0)?.Expression})");
+		}
+
+		return SyntaxFactory.ParseExpression(
+			$"Expect.That({argumentListArguments.ElementAtOrDefault(0)?.Expression}).{expectation}<{genericArgs}>()");
 	}
 
 	private static string GetGenericArguments(ExpressionSyntax expressionSyntax)

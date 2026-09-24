@@ -63,6 +63,60 @@ public class XunitAssertionCodeFixProviderTests
 		bool isAsync) => await VerifyTestCase(xunitAssertion, aweXpect, arrange, isAsync);
 
 	[Fact]
+	public async Task EqualWithPrecision_WithoutSystemNamespace_ShouldAddUsing() => await Verifier
+		.VerifyCodeFixAsync(
+			"""
+			using aweXpect;
+			using Xunit;
+
+			public class MyClass
+			{
+			    [Fact]
+			    public void MyTest()
+			    {
+			        [|Assert.Equal(1.001, 1.002, 2)|];
+			    }
+			}
+			""",
+			"""
+			using System;
+			using aweXpect;
+			using Xunit;
+
+			public class MyClass
+			{
+			    [Fact]
+			    public void MyTest()
+			    {
+			        Expect.That(Math.Round(1.002, 2)).IsEqualTo(Math.Round(1.001, 2));
+			    }
+			}
+			"""
+		);
+
+	[Fact]
+	public async Task IsTypeWithNonConstantExactMatch_ShouldNotOfferCodeFix()
+	{
+		const string source = """
+		                      using System;
+		                      using aweXpect;
+		                      using Xunit;
+
+		                      public class MyClass
+		                      {
+		                          [Theory]
+		                          [InlineData(true)]
+		                          public void MyTest(bool exactMatch)
+		                          {
+		                              [|Assert.IsType<ArgumentException>(new Exception(), exactMatch)|];
+		                          }
+		                      }
+		                      """;
+
+		await Verifier.VerifyCodeFixAsync(source, source);
+	}
+
+	[Fact]
 	public async Task ShouldApplyCodeFixInTheory() => await Verifier
 		.VerifyCodeFixAsync(
 			"""

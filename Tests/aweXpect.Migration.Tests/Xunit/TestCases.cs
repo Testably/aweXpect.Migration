@@ -65,6 +65,15 @@ public static class TestCases
 		theoryData.AddTestCase("int[] subject = [1, 2,];",
 			"Assert.Contains(subject, x => x == 1)",
 			"Expect.That(subject).Contains(x => x == 1)");
+		theoryData.AddTestCase("int[] subject = [1, 2,];",
+			"Assert.DoesNotContain(3, subject)",
+			"Expect.That(subject).DoesNotContain(3)");
+		theoryData.AddTestCase("Dictionary<string, int> subject = new();",
+			"Assert.Contains(\"foo\", subject)",
+			"Expect.That(subject).ContainsKey(\"foo\")");
+		theoryData.AddTestCase("IReadOnlyDictionary<string, int> subject = new Dictionary<string, int>();",
+			"Assert.DoesNotContain(\"foo\", subject)",
+			"Expect.That(subject).DoesNotContainKey(\"foo\")");
 		return theoryData;
 	}
 
@@ -89,6 +98,24 @@ public static class TestCases
 		theoryData.AddTestCase("",
 			"Assert.NotEqual(1.0, 1.1, 0.1)",
 			"Expect.That(1.1).IsNotEqualTo(1.0).Within(0.1)");
+		theoryData.AddTestCase("",
+			"Assert.Equal(1.0f, 1.1f, 0.1f)",
+			"Expect.That(1.1f).IsEqualTo(1.0f).Within(0.1f)");
+		theoryData.AddTestCase("",
+			"Assert.NotEqual(1.0f, 1.1f, 0.1f)",
+			"Expect.That(1.1f).IsNotEqualTo(1.0f).Within(0.1f)");
+		theoryData.AddTestCase("double expected = 1.001; double actual = 1.002;",
+			"Assert.Equal(expected, actual, 2)",
+			"Expect.That(Math.Round(actual, 2)).IsEqualTo(Math.Round(expected, 2))");
+		theoryData.AddTestCase("double expected = 1.001; double actual = 1.002;",
+			"Assert.Equal(expected, actual, 2, MidpointRounding.AwayFromZero)",
+			"Expect.That(Math.Round(actual, 2, MidpointRounding.AwayFromZero)).IsEqualTo(Math.Round(expected, 2, MidpointRounding.AwayFromZero))");
+		theoryData.AddTestCase("float expected = 1.001f; float actual = 1.002f;",
+			"Assert.Equal(expected, actual, 2)",
+			"Expect.That(Math.Round(actual, 2)).IsEqualTo(Math.Round(expected, 2))");
+		theoryData.AddTestCase("decimal expected = 1.001m; decimal actual = 1.002m; int precision = 2;",
+			"Assert.NotEqual(expected, actual, precision)",
+			"Expect.That(Math.Round(actual, precision)).IsNotEqualTo(Math.Round(expected, precision))");
 		return theoryData;
 	}
 
@@ -116,6 +143,12 @@ public static class TestCases
 		theoryData.AddTestCase("Func<Task> callback = () => Task.CompletedTask;",
 			"Assert.ThrowsAsync(typeof(ArgumentException), callback)",
 			"Expect.That(callback).ThrowsExactly(typeof(ArgumentException))");
+		theoryData.AddTestCase("Action callback = () => {};",
+			"Assert.Throws<ArgumentNullException>(\"foo\", callback)",
+			"Expect.That(callback).ThrowsExactly<ArgumentNullException>().WithParamName(\"foo\")");
+		theoryData.AddTestCase("Func<Task> callback = () => Task.CompletedTask;",
+			"Assert.ThrowsAsync<ArgumentNullException>(\"foo\", callback)",
+			"Expect.That(callback).ThrowsExactly<ArgumentNullException>().WithParamName(\"foo\")");
 		return theoryData;
 	}
 
@@ -175,6 +208,21 @@ public static class TestCases
 			"Expect.That(new Exception()).IsNotExactly<ArgumentException>()");
 		theoryData.AddTestCase("",
 			"Assert.IsNotType(typeof(ArgumentException), new Exception())",
+			"Expect.That(new Exception()).IsNotExactly(typeof(ArgumentException))");
+		theoryData.AddTestCase("",
+			"Assert.IsType<ArgumentException>(new Exception(), false)",
+			"Expect.That(new Exception()).Is<ArgumentException>()");
+		theoryData.AddTestCase("",
+			"Assert.IsType<ArgumentException>(new Exception(), exactMatch: true)",
+			"Expect.That(new Exception()).IsExactly<ArgumentException>()");
+		theoryData.AddTestCase("",
+			"Assert.IsNotType<ArgumentException>(new Exception(), false)",
+			"Expect.That(new Exception()).IsNot<ArgumentException>()");
+		theoryData.AddTestCase("",
+			"Assert.IsType(typeof(ArgumentException), new Exception(), false)",
+			"Expect.That(new Exception()).Is(typeof(ArgumentException))");
+		theoryData.AddTestCase("",
+			"Assert.IsNotType(typeof(ArgumentException), new Exception(), true)",
 			"Expect.That(new Exception()).IsNotExactly(typeof(ArgumentException))");
 		return theoryData;
 	}
