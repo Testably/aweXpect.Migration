@@ -78,8 +78,8 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 		{
 			"Equal" => Equality(methodSymbol, argumentListArguments, actual, expected, false),
 			"NotEqual" => Equality(methodSymbol, argumentListArguments, actual, expected, true),
-			"Contains" => Contains(methodSymbol, actual, expected, false),
-			"DoesNotContain" => Contains(methodSymbol, actual, expected, true),
+			"Contains" => Contains(methodSymbol, argumentListArguments, actual, expected, false),
+			"DoesNotContain" => Contains(methodSymbol, argumentListArguments, actual, expected, true),
 			"StartsWith" => SyntaxFactory.ParseExpression(
 				$"Expect.That({actual}).StartsWith({expected})"),
 			"EndsWith" => SyntaxFactory.ParseExpression(
@@ -129,15 +129,21 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 	}
 #pragma warning restore S3776
 
-	private static ExpressionSyntax Equality(IMethodSymbol? methodSymbol,
+	private static ExpressionSyntax? Equality(IMethodSymbol? methodSymbol,
 		SeparatedSyntaxList<ArgumentSyntax> argumentListArguments,
 		ArgumentSyntax? actual,
 		ArgumentSyntax? expected,
 		bool negated)
 	{
 		string expectation = negated ? "IsNotEqualTo" : "IsEqualTo";
-		if (argumentListArguments.Count >= 3 && methodSymbol is { Parameters.Length: >= 3, })
+		if (argumentListArguments.Count >= 3)
 		{
+			// Any other additional argument, e.g. a comparer or ignoreCase, would be lost in the rewrite.
+			if (methodSymbol is not { Parameters.Length: >= 3, })
+			{
+				return null;
+			}
+
 			ExpressionSyntax thirdArgument = argumentListArguments[2].Expression;
 			ITypeSymbol thirdParameterType = methodSymbol.Parameters[2].Type;
 			if (thirdParameterType.SpecialType is SpecialType.System_Double or SpecialType.System_Single ||
@@ -160,17 +166,25 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 					$"Expect.That(Math.Round({actual?.Expression}{roundingArguments}))" +
 					$".{expectation}(Math.Round({expected?.Expression}{roundingArguments}))");
 			}
+
+			return null;
 		}
 
 		return SyntaxFactory.ParseExpression($"Expect.That({actual}).{expectation}({expected})");
 	}
 
-	private static ExpressionSyntax Contains(
+	private static ExpressionSyntax? Contains(
 		IMethodSymbol? methodSymbol,
+		SeparatedSyntaxList<ArgumentSyntax> argumentListArguments,
 		ArgumentSyntax? actual,
 		ArgumentSyntax? expected,
 		bool negated)
 	{
+		if (argumentListArguments.Count > 2)
+		{
+			return null;
+		}
+
 		if (IsDictionaryOverload(methodSymbol))
 		{
 			return SyntaxFactory.ParseExpression(
@@ -178,7 +192,7 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 		}
 
 		if (methodSymbol is { Parameters.Length: 2, } &&
-		    methodSymbol.Parameters[0].Type.Name == "IEnumerable" &&
+		    methodSymbol.Parameters[0].Type.Name is "IEnumerable" or "IAsyncEnumerable" &&
 		    methodSymbol.Parameters[1].Type.Name == "Predicate")
 		{
 			// Swap them - This overload is the other way around to the other ones.
@@ -227,13 +241,18 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 			: $"Expect.That({subject?.Expression}).{expectation}({argumentListArguments.ElementAtOrDefault(0)?.Expression})");
 	}
 
-	private static ExpressionSyntax Throws(
+	private static ExpressionSyntax? Throws(
 		IMethodSymbol? methodSymbol,
 		SeparatedSyntaxList<ArgumentSyntax> argumentListArguments,
 		string genericArgs,
 		bool exactly)
 	{
 		string expectation = exactly ? "ThrowsExactly" : "Throws";
+		if (argumentListArguments.Any(argument => argument.NameColon is not null))
+		{
+			return null;
+		}
+
 		if (string.IsNullOrEmpty(genericArgs))
 		{
 			return SyntaxFactory.ParseExpression(

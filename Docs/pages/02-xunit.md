@@ -50,7 +50,9 @@ matching entry under [Behavioural differences](#behavioural-differences).
 
 The precision of xUnit rounds both values to the given number of decimal places, which no tolerance can
 express, so the rewrite rounds them the same way. A `MidpointRounding` argument is passed on to
-`Math.Round`, and a using for `System` is added when necessary.
+`Math.Round`, and a using for `System` is added when necessary. Any other additional argument, such as a
+comparer, `ignoreCase: true` or a `StringComparison` on `Assert.Contains`, leaves the assertion for manual
+migration.
 
 ## Strings
 

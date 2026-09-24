@@ -36,7 +36,7 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		ExpressionSyntaxWalker walker = new(expressionSyntax is ConditionalAccessExpressionSyntax);
 		walker.Visit(expressionSyntax);
 		ExpressionSyntax? actual = walker.Subject;
-		if (actual is null || walker.Methods.Count == 0)
+		if (actual is null || walker.Methods.Count == 0 || walker.HasNestedShould)
 		{
 			return document;
 		}
@@ -117,6 +117,12 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 			    Parameters.Length: > 0,
 		    } methodSymbol)
 		{
+			return null;
+		}
+
+		if (methodSymbol.OriginalDefinition.Parameters[0].IsParams)
+		{
+			// The rewrite would take the second expected item for the because argument.
 			return null;
 		}
 
@@ -1035,9 +1041,15 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 	private sealed class ExpressionSyntaxWalker(bool isConditional) : SyntaxWalker
 	{
 		private bool _isConditional = isConditional;
+		private bool _hasShould;
 		private bool _isShould;
 		private string _subjectString = "";
 		public ExpressionSyntax? Subject { get; private set; }
+
+		/// <summary>
+		///     The chain continues on another <c>Should()</c>, e.g. after <c>.Which</c>, which the rewrite would lose.
+		/// </summary>
+		public bool HasNestedShould { get; private set; }
 
 		public Stack<IDefinitionElement> Methods { get; } = [];
 
@@ -1072,6 +1084,8 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 				_isShould = memberAccessExpressionSyntax.Name.Identifier.ValueText == "Should";
 				if (_isShould)
 				{
+					HasNestedShould |= _hasShould;
+					_hasShould = true;
 					if (_isConditional)
 					{
 						Subject = SyntaxFactory.ParseExpression(

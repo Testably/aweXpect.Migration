@@ -82,10 +82,23 @@ public abstract class AssertionCodeFixProvider(DiagnosticDescriptor rule) : Code
 			.NormalizeWhitespace()
 			.WithTrailingTrivia(SyntaxFactory.EndOfLine(endOfLine));
 		UsingDirectiveSyntax? followingUsing = compilationUnit.Usings
-			.FirstOrDefault(u => u.Name is not null && CompareUsings(u.Name.ToString(), namespaceName) > 0);
-		return followingUsing is null
-			? compilationUnit.AddUsings(usingDirective)
-			: compilationUnit.InsertNodesBefore(followingUsing, [usingDirective,]);
+			.FirstOrDefault(u => u.GlobalKeyword.IsKind(SyntaxKind.None) &&
+			                     u.StaticKeyword.IsKind(SyntaxKind.None) && u.Alias is null &&
+			                     u.Name is not null && CompareUsings(u.Name.ToString(), namespaceName) > 0);
+		if (followingUsing is null)
+		{
+			return compilationUnit.AddUsings(usingDirective);
+		}
+
+		if (followingUsing == compilationUnit.Usings[0])
+		{
+			compilationUnit = compilationUnit.ReplaceNode(followingUsing,
+				followingUsing.WithLeadingTrivia(SyntaxFactory.TriviaList()));
+			usingDirective = usingDirective.WithLeadingTrivia(followingUsing.GetLeadingTrivia());
+			followingUsing = compilationUnit.Usings[0];
+		}
+
+		return compilationUnit.InsertNodesBefore(followingUsing, [usingDirective,]);
 
 		static int CompareUsings(string left, string right)
 		{

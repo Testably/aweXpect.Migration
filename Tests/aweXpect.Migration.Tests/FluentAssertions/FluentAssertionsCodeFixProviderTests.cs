@@ -6,6 +6,14 @@ namespace aweXpect.Migration.Tests.FluentAssertions;
 
 public class FluentAssertionsCodeFixProviderTests
 {
+	/// <summary>
+	///     The line ending of the raw string literals, which depends on how the file was checked out.
+	/// </summary>
+	private static readonly string SourceNewLine = """
+	                                               a
+	                                               b
+	                                               """.Contains('\r') ? "\r\n" : "\n";
+
 	[Theory]
 	[MemberData(nameof(TestCases.Basic), MemberType = typeof(TestCases))]
 	public async Task ShouldApplyCodeFixForBasicTestCases(
@@ -202,6 +210,71 @@ public class FluentAssertionsCodeFixProviderTests
 			}
 			"""
 		);
+
+	[Fact]
+	public async Task IgnoringCollectionOrder_ShouldAddUsingAfterGlobalUsingsAndKeepHeader() => await Verifier
+		.VerifyCodeFixAsync(
+			"""
+			// header
+			global using Xunit;
+			using FluentAssertions;
+			using aweXpect;
+
+			public class MyClass
+			{
+			    [Fact]
+			    public void MyTest()
+			    {
+			        object subject = new();
+
+			        [|subject.Should().BeEquivalentTo(new { Value = 1 })|];
+			    }
+			}
+			""",
+			"""
+			// header
+			global using Xunit;
+			using aweXpect.Equivalency;
+			using FluentAssertions;
+			using aweXpect;
+
+			public class MyClass
+			{
+			    [Fact]
+			    public void MyTest()
+			    {
+			        object subject = new();
+
+			        Expect.That(subject).IsEquivalentTo(new { Value = 1 }, o => o.IgnoringCollectionOrder());
+			    }
+			}
+			"""
+		);
+
+	[Fact]
+	public async Task ChainContinuingOnWhich_ShouldNotOfferCodeFix()
+	{
+		const string source = """
+		                      using System;
+		                      using aweXpect;
+		                      using FluentAssertions;
+		                      using Xunit;
+
+		                      public class MyClass
+		                      {
+		                          [Fact]
+		                          public void MyTest()
+		                          {
+		                              Action callback = () => {};
+
+		                              {|#0:callback.Should().Throw<ArgumentException>().Which.Message.Should().Be("foo")|};
+		                          }
+		                      }
+		                      """;
+
+		await Verifier.VerifyCodeFixAsync(source,
+			[Verifier.Diagnostic().WithLocation(0), Verifier.Diagnostic().WithLocation(0),], source);
+	}
 
 	[Fact]
 	public async Task ThrowsWithMessageAndBecause_ShouldKeepBecause() => await Verifier
@@ -488,7 +561,7 @@ public class FluentAssertionsCodeFixProviderTests
 			  using System.Threading.Tasks;
 			  using aweXpect;
 			  using aweXpect.Core;
-			  {{(aweXpect.Contains(".IgnoringCollectionOrder()") ? "using aweXpect.Equivalency;\n" : "")}}using FluentAssertions;
+			  {{(aweXpect.Contains(".IgnoringCollectionOrder()") ? "using aweXpect.Equivalency;" + SourceNewLine : "")}}using FluentAssertions;
 			  using Xunit;
 
 			  public class MyClass

@@ -396,6 +396,8 @@ public static class TestCases
 			"callback.Should().Throw<ArgumentException>().WithInnerException<ArgumentException>().WithMessage(\"foo\")");
 		theoryData.Add("Action callback = () => {};",
 			"callback.Should().Throw<ArgumentException>().WithInnerExceptionExactly<ArgumentException>()");
+		theoryData.Add("string[] subject = [];",
+			"subject.Should().BeEquivalentTo(\"a\", \"b\")");
 		theoryData.Add("Type subject = typeof(string);",
 			"subject.Should().BeAssignableTo<IComparable>()");
 		theoryData.Add("Type subject = typeof(string);",

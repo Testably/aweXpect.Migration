@@ -94,6 +94,31 @@ public class XunitAssertionCodeFixProviderTests
 			"""
 		);
 
+	[Theory]
+	[InlineData("Assert.Equal(\"a\", \"A\", ignoreCase: true)")]
+	[InlineData("Assert.Equal(\"a\", \"A\", StringComparer.OrdinalIgnoreCase)")]
+	[InlineData("Assert.Contains(\"a\", \"A\", StringComparison.OrdinalIgnoreCase)")]
+	[InlineData("Assert.Throws<ArgumentException>(testCode: () => {}, paramName: \"foo\")")]
+	public async Task UnsupportedArguments_ShouldNotOfferCodeFix(string xunitAssertion)
+	{
+		string source = $$"""
+		                  using System;
+		                  using aweXpect;
+		                  using Xunit;
+
+		                  public class MyClass
+		                  {
+		                      [Fact]
+		                      public void MyTest()
+		                      {
+		                          [|{{xunitAssertion}}|];
+		                      }
+		                  }
+		                  """;
+
+		await Verifier.VerifyCodeFixAsync(source, source);
+	}
+
 	[Fact]
 	public async Task IsTypeWithNonConstantExactMatch_ShouldNotOfferCodeFix()
 	{

@@ -16,6 +16,9 @@ The tables below are grouped by **target concept** (equality, containment and so
 FluentAssertions documentation pages. Most of the basic assertions (`Be`, `NotBe`, `BeEmpty`, `Contain`,
 `StartWith` and others) are not specific to one subject type; they apply to any compatible subject.
 
+A chain that continues on a second `.Should()`, e.g. after `.Which`, is left for manual migration, as is
+any call the fixer cannot translate without losing an argument.
+
 A note in the last column marks a rewrite that behaves differently in some cases; it links to the
 matching entry under [Behavioural differences](#behavioural-differences).
 
