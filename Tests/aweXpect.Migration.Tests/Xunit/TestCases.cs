@@ -58,7 +58,7 @@ public static class TestCases
 		TheoryData<string, string, string, bool> theoryData = new();
 		theoryData.AddTestCase("int[] subject = [1, 2,];",
 			"Assert.Distinct(subject)",
-			"Expect.That(subject).AreAllUnique()");
+			"Expect.That(subject).All().AreUnique()");
 		theoryData.AddTestCase("int[] subject = [1, 2,];",
 			"Assert.Contains(1, subject)",
 			"Expect.That(subject).Contains(1)");

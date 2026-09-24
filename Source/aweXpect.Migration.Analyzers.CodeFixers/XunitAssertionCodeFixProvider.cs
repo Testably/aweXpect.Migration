@@ -91,7 +91,7 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 			"Same" => SyntaxFactory.ParseExpression(
 				$"Expect.That({actual}).IsSameAs({expected})"),
 			"Distinct" => SyntaxFactory.ParseExpression(
-				$"Expect.That({actual}).AreAllUnique()"),
+				$"Expect.That({actual}).All().AreUnique()"),
 			"NotSame" => SyntaxFactory.ParseExpression(
 				$"Expect.That({actual}).IsNotSameAs({expected})"),
 			"IsAssignableFrom" => isGeneric

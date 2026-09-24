@@ -208,7 +208,7 @@ public static class TestCases
 			"Expect.That(subject).IsNotInDescendingOrder(x => x.ToString()).Using(StringComparer.Ordinal)");
 		theoryData.AddWithBecause("int[] subject = [1, 2, 3, 1, ];",
 			"subject.Should().OnlyHaveUniqueItems({0})",
-			"Expect.That(subject).AreAllUnique()");
+			"Expect.That(subject).All().AreUnique()");
 		return theoryData;
 	}
 
@@ -235,7 +235,7 @@ public static class TestCases
 			"Expect.That(subject).IsNull()");
 		theoryData.AddWithBecause("DayOfWeek? subject = DayOfWeek.Monday;",
 			"subject.Should().NotHaveValue(2, {0})",
-			"Expect.That(subject).DoesNotHaveValue(2)");
+			"Expect.That(subject).HasValue().NotEqualTo(2)");
 		theoryData.AddWithBecause("DayOfWeek subject = DayOfWeek.Monday;",
 			"subject.Should().HaveFlag(DayOfWeek.Tuesday, {0})",
 			"Expect.That(subject).HasFlag(DayOfWeek.Tuesday)");
