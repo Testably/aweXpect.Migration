@@ -33,10 +33,18 @@ public abstract class AssertionCodeFixProvider(DiagnosticDescriptor rule) : Code
 			if (root?.FindNode(diagnosticSpan) is ExpressionSyntax expressionSyntax
 			    and (InvocationExpressionSyntax or ConditionalAccessExpressionSyntax or LambdaExpressionSyntax))
 			{
+				Document fixedDocument =
+					await ConvertAssertionAsync(context, expressionSyntax, context.CancellationToken)
+						.ConfigureAwait(false);
+				if (fixedDocument == context.Document)
+				{
+					continue;
+				}
+
 				context.RegisterCodeFix(
 					CodeAction.Create(
 						rule.Title.ToString(),
-						c => ConvertAssertionAsync(context, expressionSyntax, c),
+						_ => Task.FromResult(fixedDocument),
 						rule.Title.ToString()),
 					diagnostic);
 			}
@@ -46,6 +54,10 @@ public abstract class AssertionCodeFixProvider(DiagnosticDescriptor rule) : Code
 	/// <summary>
 	///     Converts the assertion.
 	/// </summary>
+	/// <remarks>
+	///     Returns the unchanged <see cref="CodeFixContext.Document" /> when no faithful rewrite exists, so that no code fix
+	///     is offered.
+	/// </remarks>
 	protected abstract Task<Document> ConvertAssertionAsync(CodeFixContext context,
 		ExpressionSyntax expressionSyntax, CancellationToken cancellationToken);
 }

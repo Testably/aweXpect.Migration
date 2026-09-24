@@ -410,9 +410,20 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 	{
 		if (methods?.Count > 0)
 		{
+			bool continuesOnInnerException = false;
 			foreach (IDefinitionElement? method in methods)
 			{
-				expression += await ParseAdditionalMethodExpression(context, actual, method) ?? "";
+				string? additionalExpression = await ParseAdditionalMethodExpression(context, actual, method);
+				if (additionalExpression is null || continuesOnInnerException)
+				{
+					return null;
+				}
+
+				expression += additionalExpression;
+				continuesOnInnerException = method is MethodDefinitionElement
+				{
+					Element.Method.Name.Identifier.ValueText: "WithInnerException",
+				};
 			}
 		}
 
@@ -447,9 +458,19 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		{
 			MethodDefinition? method = methodDefinitionElement.Element;
 			string? methodName = method.Method.Name.Identifier.ValueText;
+			string genericArgs = GetGenericArguments(method.Method.Name);
+			Task<string?> ParseExpressionWithBecause(string expression, int becauseIndex)
+				=> ParseExpressionWithBecauseSupport(context, actual, method.Arguments, expression, null,
+					becauseIndex);
+
 			return methodName switch
 			{
 				"WithMessage" => $".WithMessage({method.Arguments.ElementAtOrDefault(0)}).AsWildcard()",
+				"WithInnerException" => genericArgs != ""
+					? await ParseExpressionWithBecause($".WithInner<{genericArgs}>()", 0)
+					: await ParseExpressionWithBecause($".WithInner({method.Arguments.ElementAtOrDefault(0)})", 1),
+				"WithParameterName" => await ParseExpressionWithBecause(
+					$".WithParamName({method.Arguments.ElementAtOrDefault(0)})", 1),
 				_ => await GetNewExpressionFor(context, actual, method, null)
 			};
 		}

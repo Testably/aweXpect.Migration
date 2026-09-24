@@ -312,6 +312,30 @@ public static class TestCases
 			"callback.Should().ThrowExactlyAsync<ArgumentException>({0})",
 			"Expect.That(callback).ThrowsExactly<ArgumentException>()",
 			true);
+		theoryData.AddWithBecause("Action callback = () => {};",
+			"callback.Should().Throw<ArgumentException>().WithInnerException<ArgumentException>({0})",
+			"Expect.That(callback).Throws<ArgumentException>().WithInner<ArgumentException>()");
+		theoryData.AddWithBecause("Action callback = () => {};",
+			"callback.Should().Throw<ArgumentException>().WithInnerException(typeof(ArgumentException), {0})",
+			"Expect.That(callback).Throws<ArgumentException>().WithInner(typeof(ArgumentException))");
+		theoryData.AddWithBecause("Action callback = () => {};",
+			"callback.Should().Throw<ArgumentException>().WithParameterName(\"foo\", {0})",
+			"Expect.That(callback).Throws<ArgumentException>().WithParamName(\"foo\")");
+		return theoryData;
+	}
+
+	/// <summary>
+	///     Assertions without a faithful rewrite, for which no code fix is offered.
+	/// </summary>
+	public static TheoryData<string, string> NoCodeFix()
+	{
+		TheoryData<string, string> theoryData = new();
+		theoryData.Add("Action callback = () => {};",
+			"callback.Should().Throw<ArgumentException>().Where(e => e.Message == \"foo\")");
+		theoryData.Add("Action callback = () => {};",
+			"callback.Should().Throw<ArgumentException>().WithInnerException<ArgumentException>().WithMessage(\"foo\")");
+		theoryData.Add("Action callback = () => {};",
+			"callback.Should().Throw<ArgumentException>().WithInnerExceptionExactly<ArgumentException>()");
 		return theoryData;
 	}
 

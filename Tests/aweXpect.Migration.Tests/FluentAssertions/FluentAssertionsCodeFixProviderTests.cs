@@ -86,6 +86,34 @@ public class FluentAssertionsCodeFixProviderTests
 		string arrange,
 		bool isAsync) => await VerifyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
+	[Theory]
+	[MemberData(nameof(TestCases.NoCodeFix), MemberType = typeof(TestCases))]
+	public async Task ShouldNotOfferCodeFix(string arrange, string fluentAssertions)
+	{
+		string source = $$"""
+		                  using System;
+		                  using System.Collections.Generic;
+		                  using System.Linq;
+		                  using System.Threading.Tasks;
+		                  using aweXpect;
+		                  using FluentAssertions;
+		                  using Xunit;
+
+		                  public class MyClass
+		                  {
+		                      [Fact]
+		                      public void MyTest()
+		                      {
+		                          {{arrange}}
+
+		                          [|{{fluentAssertions}}|];
+		                      }
+		                  }
+		                  """;
+
+		await Verifier.VerifyCodeFixAsync(source, source);
+	}
+
 	[Fact]
 	public async Task ShouldApplyCodeFixInTheory() => await Verifier
 		.VerifyCodeFixAsync(

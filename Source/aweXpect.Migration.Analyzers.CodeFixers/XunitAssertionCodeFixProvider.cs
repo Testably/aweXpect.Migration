@@ -47,12 +47,13 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 		ExpressionSyntax? newExpression = await GetNewExpression(context, memberAccessExpressionSyntax, methodName,
 			actual, expected, genericArgs, invocationExpression.ArgumentList.Arguments);
 
-		if (newExpression != null)
+		if (newExpression == null)
 		{
-			compilationUnit =
-				compilationUnit.ReplaceNode(expressionSyntax, newExpression.WithTriviaFrom(expressionSyntax));
+			return document;
 		}
 
+		compilationUnit =
+			compilationUnit.ReplaceNode(expressionSyntax, newExpression.WithTriviaFrom(expressionSyntax));
 		return document.WithSyntaxRoot(compilationUnit);
 	}
 
