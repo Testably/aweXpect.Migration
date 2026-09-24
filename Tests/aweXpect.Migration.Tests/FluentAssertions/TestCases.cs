@@ -127,7 +127,7 @@ public static class TestCases
 			"Expect.That(subject).All().AreExactly(typeof(ArgumentException))");
 		theoryData.AddWithBecause("int[] subject = [1, 2,];int[] expected = [1, 2,];",
 			"subject.Should().BeSubsetOf(expected, {0})",
-			"Expect.That(subject).IsContainedIn(expected).InAnyOrder()");
+			"Expect.That(subject).IsContainedIn(expected).InAnyOrder().IgnoringDuplicates()");
 		theoryData.AddWithBecause("int[] subject = [1, 2,];int[] expected = [1, 2,];",
 			"subject.Should().NotBeSubsetOf(expected, {0})",
 			"Expect.That(subject).IsNotContainedIn(expected).InAnyOrder()");
@@ -145,13 +145,46 @@ public static class TestCases
 			"Expect.That(subject).Contains([1, 2, 3])");
 		theoryData.AddWithBecause("int[] subject = [1, 2,];int[] expected = [1, 2,];",
 			"subject.Should().Contain(expected, {0})",
-			"Expect.That(subject).Contains(expected).InAnyOrder().IgnoringInterspersedItems()");
+			"Expect.That(subject).Contains(expected).InAnyOrder().IgnoringInterspersedItems().IgnoringDuplicates()");
+		theoryData.AddWithBecause("List<int[]> subject = [];int[] expected = [1, 2,];",
+			"subject.Should().Contain(expected, {0})",
+			"Expect.That(subject).Contains(expected)");
+		theoryData.AddWithBecause("int[] subject = [1, 2,];int[] unexpected = [3, 4,];",
+			"subject.Should().NotContain(unexpected, {0})",
+			"Expect.That(subject).None().ComplyWith(x => x.IsOneOf(unexpected))");
+		theoryData.AddWithBecause("string[] subject = [\"a\",];int x = 0;",
+			"subject.Should().NotContain([\"b\", \"c\",], {0})",
+			"Expect.That(subject).None().ComplyWith(x1 => x1.IsOneOf([\"b\", \"c\",]))");
+		theoryData.AddWithBecause("int[] subject = [1, 2,];",
+			"subject.Should().NotContain(3, {0})",
+			"Expect.That(subject).DoesNotContain(3)");
+		theoryData.AddWithBecause("List<int[]> subject = [];int[] unexpected = [1, 2,];",
+			"subject.Should().NotContain(unexpected, {0})",
+			"Expect.That(subject).DoesNotContain(unexpected)");
+		theoryData.AddWithBecause("int[] subject = [1, 2,];",
+			"subject.Should().NotContain(x => x > 2, {0})",
+			"Expect.That(subject).DoesNotContain(x => x > 2)");
+		theoryData.AddWithBecause("int[] subject = [1, 2,];",
+			"subject.Should().ContainEquivalentOf(1, {0})",
+			"Expect.That(subject).Contains(1).Equivalent()");
+		theoryData.AddWithBecause("object[] subject = [1, 2,];object expected = new();",
+			"subject.Should().ContainEquivalentOf(expected, o => o.WithStrictOrdering(), {0})",
+			"Expect.That(subject).Contains(expected).Equivalent()");
+		theoryData.AddWithBecause("Exception[] subject = [];",
+			"subject.Should().AllBeEquivalentTo(new Exception(), {0})",
+			"Expect.That(subject).All().AreEquivalentTo(new Exception(), o => o.IgnoringCollectionOrder())");
+		theoryData.AddWithBecause("int[] subject = [];",
+			"subject.Should().BeNullOrEmpty({0})",
+			"Expect.That(subject).IsNull().Or.IsEmpty()");
+		theoryData.AddWithBecause("int[] subject = [];",
+			"subject.Should().NotBeNullOrEmpty({0})",
+			"Expect.That(subject).IsNotEmpty()");
 		theoryData.AddWithBecause("object[] subject = [1, 2,];object expected = new();",
 			"subject.Should().ContainEquivalentOf(expected, {0})",
-			"Expect.That(subject).Contains(expected).Equivalent()");
+			"Expect.That(subject).Contains(expected).Equivalent(o => o.IgnoringCollectionOrder())");
 		theoryData.AddWithBecause("object[] subject = [1, 2,];object expected = new();",
 			"subject.Should().NotContainEquivalentOf(expected, {0})",
-			"Expect.That(subject).DoesNotContain(expected).Equivalent()");
+			"Expect.That(subject).DoesNotContain(expected).Equivalent(o => o.IgnoringCollectionOrder())");
 		theoryData.AddWithBecause("int[] subject = [1, 2,];int[] expected = [1, 2,];",
 			"subject.Should().StartWith(expected, {0})",
 			"Expect.That(subject).StartsWith(expected)");
@@ -236,6 +269,9 @@ public static class TestCases
 		theoryData.AddWithBecause("DayOfWeek? subject = DayOfWeek.Monday;",
 			"subject.Should().NotHaveValue(2, {0})",
 			"Expect.That(subject).HasValue().NotEqualTo(2)");
+		theoryData.AddWithBecause("DayOfWeek? subject = DayOfWeek.Monday;",
+			"subject.Should().HaveValue(int.Parse(\"1\"), {0})",
+			"Expect.That(subject).HasValue(int.Parse(\"1\"))");
 		theoryData.AddWithBecause("DayOfWeek subject = DayOfWeek.Monday;",
 			"subject.Should().HaveFlag(DayOfWeek.Tuesday, {0})",
 			"Expect.That(subject).HasFlag(DayOfWeek.Tuesday)");
@@ -253,7 +289,7 @@ public static class TestCases
 		TheoryData<string, string, string, bool> theoryData = new();
 		theoryData.AddWithBecause("object subject = new object();object expected = new object();",
 			"subject.Should().BeEquivalentTo(expected, {0})",
-			"Expect.That(subject).IsEquivalentTo(expected)");
+			"Expect.That(subject).IsEquivalentTo(expected, o => o.IgnoringCollectionOrder())");
 		theoryData.AddWithBecause("byte[] subject = [];byte[] expected = [];",
 			"subject.Should().BeEquivalentTo(expected, {0})",
 			"Expect.That(subject).IsEqualTo(expected).InAnyOrder()");
@@ -265,16 +301,40 @@ public static class TestCases
 			"Expect.That(subject).IsEqualTo(expected)");
 		theoryData.AddWithBecause("AggregateException subject = new(); Exception[] expected = [];",
 			"subject.InnerExceptions.Should().BeEquivalentTo(expected, o => o.WithStrictOrdering(), {0})",
-			"Expect.That(subject.InnerExceptions).IsEqualTo(expected)");
+			"Expect.That(subject.InnerExceptions).IsEquivalentTo(expected)");
 		theoryData.AddWithBecause("int[] subject = [];int[] expected = [];",
 			"subject.Should().BeEquivalentTo(expected, o => o.WithoutStrictOrdering(), {0})",
 			"Expect.That(subject).IsEqualTo(expected).InAnyOrder()");
 		theoryData.AddWithBecause("object subject = new object();object unexpected = new object();",
 			"subject.Should().NotBeEquivalentTo(unexpected, {0})",
-			"Expect.That(subject).IsNotEquivalentTo(unexpected)");
+			"Expect.That(subject).IsNotEquivalentTo(unexpected, o => o.IgnoringCollectionOrder())");
 		theoryData.AddWithBecause("int[] subject = [];int[] unexpected = [];",
 			"subject.Should().NotBeEquivalentTo(unexpected, {0})",
 			"Expect.That(subject).IsNotEqualTo(unexpected).InAnyOrder()");
+		theoryData.AddWithBecause("DateTime[] subject = [];List<DateTime> expected = [];",
+			"subject.Should().BeEquivalentTo(expected, {0})",
+			"Expect.That(subject).IsEqualTo(expected).InAnyOrder()");
+		theoryData.AddWithBecause("Version[] subject = [];Version[] expected = [];",
+			"subject.Should().BeEquivalentTo(expected, {0})",
+			"Expect.That(subject).IsEqualTo(expected).InAnyOrder()");
+		theoryData.AddWithBecause("Exception[] subject = [];Exception[] expected = [];",
+			"subject.Should().BeEquivalentTo(expected, {0})",
+			"Expect.That(subject).IsEquivalentTo(expected, o => o.IgnoringCollectionOrder())");
+		theoryData.AddWithBecause("object[] subject = [];var expected = new[] { new { Value = 1, }, };",
+			"subject.Should().BeEquivalentTo(expected, {0})",
+			"Expect.That(subject).IsEquivalentTo(expected, o => o.IgnoringCollectionOrder())");
+		theoryData.AddWithBecause("List<int[]> subject = [];int[][] expected = [];",
+			"subject.Should().BeEquivalentTo(expected, o => o.WithoutStrictOrdering(), {0})",
+			"Expect.That(subject).IsEquivalentTo(expected, o => o.IgnoringCollectionOrder())");
+		theoryData.AddWithBecause("Exception[] subject = [];Exception[] unexpected = [];",
+			"subject.Should().NotBeEquivalentTo(unexpected, {0})",
+			"Expect.That(subject).IsNotEquivalentTo(unexpected, o => o.IgnoringCollectionOrder())");
+		theoryData.AddWithBecause("object subject = new object();object expected = new object();",
+			"subject.Should().BeEquivalentTo(expected, o => o.WithStrictOrdering(), {0})",
+			"Expect.That(subject).IsEquivalentTo(expected)");
+		theoryData.AddWithBecause("object subject = new object();object expected = new object();object o = new();",
+			"subject.Should().BeEquivalentTo(expected, {0})",
+			"Expect.That(subject).IsEquivalentTo(expected, o1 => o1.IgnoringCollectionOrder())");
 		return theoryData;
 	}
 
@@ -336,6 +396,16 @@ public static class TestCases
 			"callback.Should().Throw<ArgumentException>().WithInnerException<ArgumentException>().WithMessage(\"foo\")");
 		theoryData.Add("Action callback = () => {};",
 			"callback.Should().Throw<ArgumentException>().WithInnerExceptionExactly<ArgumentException>()");
+		theoryData.Add("Type subject = typeof(string);",
+			"subject.Should().BeAssignableTo<IComparable>()");
+		theoryData.Add("Type subject = typeof(string);",
+			"subject.Should().NotBeAssignableTo(typeof(IComparable))");
+		theoryData.Add("Exception subject = new();Exception expected = new();",
+			"subject.Should().BeEquivalentTo(expected, o => o.Excluding(e => e.Message))");
+		theoryData.Add("Exception[] subject = [];Exception[] expected = [];",
+			"subject.Should().BeEquivalentTo(expected, o => o.WithStrictOrdering().Excluding(e => e.Message))");
+		theoryData.Add("object[] subject = [];object expected = new();",
+			"subject.Should().ContainEquivalentOf(expected, o => o.Excluding(e => e.GetType()))");
 		return theoryData;
 	}
 
@@ -381,6 +451,18 @@ public static class TestCases
 		theoryData.AddWithBecause("byte subject = 1;byte expected = 2;byte delta = 3;",
 			"subject.Should().NotBeCloseTo(expected, delta, {0})",
 			"Expect.That(subject).IsNotEqualTo(expected).Within(delta)");
+		theoryData.AddWithBecause("int subject = 1;int expected = 2;uint delta = 3;",
+			"subject.Should().BeCloseTo(expected, delta, {0})",
+			"Expect.That(subject).IsEqualTo(expected).Within((int)delta)");
+		theoryData.AddWithBecause("int subject = 1;int expected = 2;uint delta = 3;",
+			"subject.Should().NotBeCloseTo(expected, delta + 1, {0})",
+			"Expect.That(subject).IsNotEqualTo(expected).Within((int)(delta + 1))");
+		theoryData.AddWithBecause("long subject = 1;long expected = 2;",
+			"subject.Should().BeCloseTo(expected, 3, {0})",
+			"Expect.That(subject).IsEqualTo(expected).Within(3)");
+		theoryData.AddWithBecause("DateTime subject = DateTime.Now;DateTime expected = DateTime.Now;",
+			"subject.Should().BeCloseTo(expected, TimeSpan.FromSeconds(1), {0})",
+			"Expect.That(subject).IsEqualTo(expected).Within(TimeSpan.FromSeconds(1))");
 		theoryData.AddWithBecause("int subject = 1;int[] expected = [2, 3,];",
 			"subject.Should().BeOneOf(expected, {0})",
 			"Expect.That(subject).IsOneOf(expected)");
@@ -608,13 +690,13 @@ public static class TestCases
 			"Expect.That(subject).IsEqualTo(expected).IgnoringCase()");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().BeEquivalentTo(expected, o => o.IgnoringLeadingWhitespace(), {0})",
-			"Expect.That(subject).IsEqualTo(expected).IgnoringCase().IgnoringLeadingWhiteSpace()");
+			"Expect.That(subject).IsEqualTo(expected).IgnoringLeadingWhiteSpace()");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().BeEquivalentTo(expected, o => o.IgnoringTrailingWhitespace(), {0})",
-			"Expect.That(subject).IsEqualTo(expected).IgnoringCase().IgnoringTrailingWhiteSpace()");
+			"Expect.That(subject).IsEqualTo(expected).IgnoringTrailingWhiteSpace()");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().BeEquivalentTo(expected, o => o.IgnoringNewlineStyle(), {0})",
-			"Expect.That(subject).IsEqualTo(expected).IgnoringCase().IgnoringNewlineStyle()");
+			"Expect.That(subject).IsEqualTo(expected).IgnoringNewlineStyle()");
 		theoryData.AddWithBecause("string subject = \"foo\"; string expected = \"bar\";",
 			"subject.Should().Match(expected, {0})",
 			"Expect.That(subject).IsEqualTo(expected).AsWildcard()");

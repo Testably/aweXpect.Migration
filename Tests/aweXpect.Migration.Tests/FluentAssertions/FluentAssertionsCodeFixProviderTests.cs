@@ -115,6 +115,134 @@ public class FluentAssertionsCodeFixProviderTests
 	}
 
 	[Fact]
+	public async Task IgnoringCollectionOrder_ShouldAddUsingOnceForAllFixes() => await Verifier
+		.VerifyCodeFixAsync(
+			"""
+			using System;
+			using aweXpect;
+			using FluentAssertions;
+			using Xunit;
+
+			public class MyClass
+			{
+			    [Fact]
+			    public void MyTest()
+			    {
+			        object subject = new();
+
+			        [|subject.Should().BeEquivalentTo(new { Value = 1 })|];
+			        [|subject.Should().NotBeEquivalentTo(new { Value = 2 })|];
+			    }
+			}
+			""",
+			"""
+			using System;
+			using aweXpect;
+			using aweXpect.Equivalency;
+			using FluentAssertions;
+			using Xunit;
+
+			public class MyClass
+			{
+			    [Fact]
+			    public void MyTest()
+			    {
+			        object subject = new();
+
+			        Expect.That(subject).IsEquivalentTo(new { Value = 1 }, o => o.IgnoringCollectionOrder());
+			        Expect.That(subject).IsNotEquivalentTo(new { Value = 2 }, o => o.IgnoringCollectionOrder());
+			    }
+			}
+			"""
+		);
+
+	[Fact]
+	public async Task IgnoringCollectionOrder_WhenNamespaceIsImported_ShouldNotAddUsing() => await Verifier
+		.VerifyCodeFixAsync(
+			"""
+			using aweXpect;
+			using FluentAssertions;
+			using Xunit;
+
+			namespace MyNamespace
+			{
+			    using aweXpect.Equivalency;
+
+			    public class MyClass
+			    {
+			        [Fact]
+			        public void MyTest()
+			        {
+			            object subject = new();
+
+			            [|subject.Should().BeEquivalentTo(new { Value = 1 })|];
+			        }
+			    }
+			}
+			""",
+			"""
+			using aweXpect;
+			using FluentAssertions;
+			using Xunit;
+
+			namespace MyNamespace
+			{
+			    using aweXpect.Equivalency;
+
+			    public class MyClass
+			    {
+			        [Fact]
+			        public void MyTest()
+			        {
+			            object subject = new();
+
+			            Expect.That(subject).IsEquivalentTo(new { Value = 1 }, o => o.IgnoringCollectionOrder());
+			        }
+			    }
+			}
+			"""
+		);
+
+	[Fact]
+	public async Task ThrowsWithMessageAndBecause_ShouldKeepBecause() => await Verifier
+		.VerifyCodeFixAsync(
+			"""
+			using System;
+			using aweXpect;
+			using FluentAssertions;
+			using Xunit;
+
+			public class MyClass
+			{
+			    [Fact]
+			    public void MyTest()
+			    {
+			        Action callback = () => {};
+
+			        [|callback.Should().Throw<ArgumentException>().WithMessage("foo*", "because {0}", 1)|];
+			    }
+			}
+			""",
+			"""
+			using System;
+			using aweXpect;
+			using FluentAssertions;
+			using Xunit;
+
+			public class MyClass
+			{
+			    [Fact]
+			    public void MyTest()
+			    {
+			        Action callback = () => {};
+
+			        Expect.That(callback).Throws<ArgumentException>().WithMessage("foo*").AsWildcard().IgnoringCase().IgnoringNewlineStyle().Because($"because {1}");
+			    }
+			}
+			"""
+		);
+
+	[Fact]
 	public async Task ShouldApplyCodeFixInTheory() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -320,7 +448,7 @@ public class FluentAssertionsCodeFixProviderTests
 			    {
 			        Action callback = () => {};
 			        
-			        Expect.That(callback).Throws<ArgumentException>().WithMessage("foo*").AsWildcard();
+			        Expect.That(callback).Throws<ArgumentException>().WithMessage("foo*").AsWildcard().IgnoringCase().IgnoringNewlineStyle();
 			    }
 			}
 			"""
@@ -360,7 +488,7 @@ public class FluentAssertionsCodeFixProviderTests
 			  using System.Threading.Tasks;
 			  using aweXpect;
 			  using aweXpect.Core;
-			  using FluentAssertions;
+			  {{(aweXpect.Contains(".IgnoringCollectionOrder()") ? "using aweXpect.Equivalency;\n" : "")}}using FluentAssertions;
 			  using Xunit;
 
 			  public class MyClass
