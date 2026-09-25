@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using aweXpect.Migration.Analyzers.Common;
@@ -130,21 +131,20 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		int becauseIndex = options is null ? 1 : 2;
 		string optionsText = options?.ToString() ?? "";
 		ITypeSymbol parameterType = methodSymbol.OriginalDefinition.Parameters[0].Type;
+		string isEqualTo = negated ? "IsNotEqualTo" : "IsEqualTo";
 		if (IsString(parameterType))
 		{
 			string stringSuffix = options is null ? ".IgnoringCase()" : GetStringOptionsSuffix(optionsText);
 			return await ParseExpressionWithBecauseSupport(context, actual, arguments,
-				$".{(negated ? "IsNotEqualTo" : "IsEqualTo")}({expected})" + stringSuffix,
+				$".{isEqualTo}({expected})" + stringSuffix,
 				methods, becauseIndex);
 		}
 
-		if (parameterType is not ITypeParameterSymbol && IsEnumerable(parameterType) &&
-		    (methodSymbol.TypeArguments.FirstOrDefault() ?? GetElementType(methodSymbol.Parameters[0].Type))
-		    is { } elementType && HasValueSemantics(elementType))
+		if (IsCollectionWithValueSemantics(methodSymbol, parameterType))
 		{
 			string collectionSuffix = optionsText.Contains(".WithStrictOrdering()") ? "" : ".InAnyOrder()";
 			return await ParseExpressionWithBecauseSupport(context, actual, arguments,
-				$".{(negated ? "IsNotEqualTo" : "IsEqualTo")}({expected})" + collectionSuffix +
+				$".{isEqualTo}({expected})" + collectionSuffix +
 				GetStringOptionsSuffix(optionsText),
 				methods, becauseIndex);
 		}
@@ -159,6 +159,11 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 			(isStrictOrdering ? "" : ", " + IgnoringCollectionOrder(semanticModel, mainMethod)) + ")",
 			methods, becauseIndex);
 	}
+
+	private static bool IsCollectionWithValueSemantics(IMethodSymbol methodSymbol, ITypeSymbol parameterType)
+		=> parameterType is not ITypeParameterSymbol && IsEnumerable(parameterType) &&
+		   (methodSymbol.TypeArguments.FirstOrDefault() ?? GetElementType(methodSymbol.Parameters[0].Type))
+		   is { } elementType && HasValueSemantics(elementType);
 
 	/// <summary>
 	///     Returns the equivalency options argument, if the called overload accepts one in place of the <c>because</c>
@@ -628,6 +633,7 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		Stack<IDefinitionElement>? methods,
 		int? becauseIndex = null)
 	{
+		StringBuilder sb = new(expression);
 		if (methods?.Count > 0)
 		{
 			bool continuesOnInnerException = false;
@@ -639,7 +645,7 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 					return null;
 				}
 
-				expression += additionalExpression;
+				sb.Append(additionalExpression);
 				continuesOnInnerException = method is MethodDefinitionElement
 				{
 					Element.Method.Name.Identifier.ValueText: "WithInnerException",
@@ -649,24 +655,31 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 
 		if (becauseIndex.HasValue)
 		{
-			string? because = arguments.ElementAtOrDefault(becauseIndex.Value)?.ToString();
-			if (because != null)
-			{
-				if (becauseIndex.Value + 1 < arguments.Count)
-				{
-					because = $"${because}";
-					int index = 0;
-					for (int i = becauseIndex.Value + 1; i < arguments.Count; i++)
-					{
-						because = because.Replace($"{{{index++}}}", $"{{{arguments[i]}}}");
-					}
-				}
+			sb.Append(GetBecauseExpression(arguments, becauseIndex.Value));
+		}
 
-				expression += $".Because({because})";
+		return sb.ToString();
+	}
+
+	private static string GetBecauseExpression(SeparatedSyntaxList<ArgumentSyntax> arguments, int becauseIndex)
+	{
+		string? because = arguments.ElementAtOrDefault(becauseIndex)?.ToString();
+		if (because is null)
+		{
+			return "";
+		}
+
+		if (becauseIndex + 1 < arguments.Count)
+		{
+			because = $"${because}";
+			int index = 0;
+			for (int i = becauseIndex + 1; i < arguments.Count; i++)
+			{
+				because = because.Replace($"{{{index++}}}", $"{{{arguments[i]}}}");
 			}
 		}
 
-		return expression;
+		return $".Because({because})";
 	}
 
 	private static async Task<string?> ParseAdditionalMethodExpression(
