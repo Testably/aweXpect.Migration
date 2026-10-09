@@ -180,27 +180,27 @@ compared by value (see [Equivalency](#equivalency)) and with `o => o.WithStrictO
 `Thrice` and `Times(n)` cases are emitted as `3.Times()` or numeric arguments, not as a chained
 `.Thrice()`. Occurrences are [counted without overlap](#occurrences-are-counted-without-overlap).
 
-| FluentAssertions occurrence | Appended to the rewrite |
-|-----------------------------|-------------------------|
-| `AtLeast.Once()`            | `.AtLeast().Once()`     |
-| `AtLeast.Twice()`           | `.AtLeast().Twice()`    |
-| `AtLeast.Thrice()`          | `.AtLeast(3.Times())`   |
-| `AtLeast.Times(n)`          | `.AtLeast(n)`           |
-| `AtMost.Once()`             | `.AtMost().Once()`      |
-| `AtMost.Twice()`            | `.AtMost().Twice()`     |
-| `AtMost.Thrice()`           | `.AtMost(3.Times())`    |
-| `AtMost.Times(n)`           | `.AtMost(n)`            |
-| `Exactly.Once()`            | `.Once()`               |
-| `Exactly.Twice()`           | `.Twice()`              |
-| `Exactly.Thrice()`          | `.Exactly(3.Times())`   |
-| `Exactly.Times(n)`          | `.Exactly(n)`           |
-| `LessThan.Twice()`          | `.LessThan().Twice()`   |
-| `LessThan.Thrice()`         | `.LessThan(3.Times())`  |
-| `LessThan.Times(n)`         | `.LessThan(n)`          |
-| `MoreThan.Once()`           | `.MoreThan().Once()`    |
-| `MoreThan.Twice()`          | `.MoreThan().Twice()`   |
-| `MoreThan.Thrice()`         | `.MoreThan(3.Times())`  |
-| `MoreThan.Times(n)`         | `.MoreThan(n)`          |
+| FluentAssertions occurrence | Appended to the rewrite | Note                                        |
+|-----------------------------|-------------------------|---------------------------------------------|
+| `AtLeast.Once()`            | `.AtLeast().Once()`     |                                             |
+| `AtLeast.Twice()`           | `.AtLeast().Twice()`    |                                             |
+| `AtLeast.Thrice()`          | `.AtLeast(3.Times())`   |                                             |
+| `AtLeast.Times(n)`          | `.AtLeast(n)`           |                                             |
+| `AtMost.Once()`             | `.AtMost().Once()`      | [null](#negated-inspections-fail-for-null)  |
+| `AtMost.Twice()`            | `.AtMost().Twice()`     | [null](#negated-inspections-fail-for-null)  |
+| `AtMost.Thrice()`           | `.AtMost(3.Times())`    | [null](#negated-inspections-fail-for-null)  |
+| `AtMost.Times(n)`           | `.AtMost(n)`            | [null](#negated-inspections-fail-for-null)  |
+| `Exactly.Once()`            | `.Once()`               |                                             |
+| `Exactly.Twice()`           | `.Twice()`              |                                             |
+| `Exactly.Thrice()`          | `.Exactly(3.Times())`   |                                             |
+| `Exactly.Times(n)`          | `.Exactly(n)`           |                                             |
+| `LessThan.Twice()`          | `.LessThan().Twice()`   | [null](#negated-inspections-fail-for-null)  |
+| `LessThan.Thrice()`         | `.LessThan(3.Times())`  | [null](#negated-inspections-fail-for-null)  |
+| `LessThan.Times(n)`         | `.LessThan(n)`          | [null](#negated-inspections-fail-for-null)  |
+| `MoreThan.Once()`           | `.MoreThan().Once()`    |                                             |
+| `MoreThan.Twice()`          | `.MoreThan().Twice()`   |                                             |
+| `MoreThan.Thrice()`         | `.MoreThan(3.Times())`  |                                             |
+| `MoreThan.Times(n)`         | `.MoreThan(n)`          |                                             |
 
 ## Collections
 
@@ -362,11 +362,14 @@ negative tolerance is a malformed expectation.
 #### Negated inspections fail for null
 
 `NotBeEmpty()` and `NotContain("x")` pass in FluentAssertions for a `null` string, and `NotHaveValue(2)`
-passes for a `null` enum. Their rewrites fail, because an expectation that inspects the content has
-nothing to inspect in `null`. Allow `null` explicitly where it is acceptable:
+passes for a `null` enum. The same holds for `Contain("x", AtMost.Once())`, `Contain("x", LessThan.Twice())`
+and any other occurrence constraint that allows zero occurrences. Their rewrites fail, because an
+expectation that inspects the content has nothing to inspect in `null`. Allow `null` explicitly where it
+is acceptable:
 
 ```csharp
 await Expect.That(subject).IsNull().Or.IsNotEmpty();
+await Expect.That(subject).IsNull().Or.Contains("x").AtMost().Once();
 ```
 
 ### Type checks
