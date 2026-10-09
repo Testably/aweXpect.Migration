@@ -169,7 +169,7 @@ matters, so an item that is itself a collection is still treated as a single ite
 | `subject.Should().BeInDescendingOrder()`                                | `Expect.That(subject).IsInDescendingOrder()`                                                              |                                             |
 | `subject.Should().NotBeInAscendingOrder()` / `NotBeInDescendingOrder()` | `Expect.That(subject).IsNotInAscendingOrder()` / `IsNotInDescendingOrder()`                               |                                             |
 | `subject.Should().Match(predicate)` *(non-string subject)*              | `Expect.That(subject).Satisfies(predicate)`                                                               |                                             |
-| `subject.Should().Match(pattern)` *(string subject)*                    | `Expect.That(subject).IsEqualTo(pattern).AsWildcard()`                                                    |                                             |
+| `subject.Should().Match(pattern)` *(string subject)*                    | `Expect.That(subject).IsEqualTo(pattern).AsWildcard()`                                                    | [pattern](#empty-wildcard-patterns)         |
 
 `ContainEquivalentOf` and `NotContainEquivalentOf` use `Equivalent()` without options for items that are
 compared by value (see [Equivalency](#equivalency)) and with `o => o.WithStrictOrdering()`.
@@ -401,6 +401,12 @@ range whose maximum is below its minimum is a malformed expectation. Swap the bo
 empty collection pass in FluentAssertions for every subject. The rewrites throw an `ArgumentException`,
 because an expectation that cannot fail checks nothing. Remove the assertion or expect something
 concrete.
+
+#### Empty wildcard patterns
+
+`Match("")` on a string throws an `ArgumentException` in FluentAssertions. The rewrite
+`IsEqualTo("").AsWildcard()` does not throw: an empty pattern matches only the empty string, so it passes
+for `""` and fails for any other subject.
 
 #### Occurrences are counted without overlap
 
