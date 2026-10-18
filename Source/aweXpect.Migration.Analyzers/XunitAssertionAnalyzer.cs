@@ -13,7 +13,8 @@ namespace aweXpect.Migration.Analyzers;
 public class XunitAssertionAnalyzer : DiagnosticAnalyzer
 {
 	/// <inheritdoc />
-	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = [Rules.XunitAssertionRule,];
+	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+		ImmutableArray.Create(Rules.XunitAssertionRule);
 
 	/// <inheritdoc />
 	public override void Initialize(AnalysisContext context)
