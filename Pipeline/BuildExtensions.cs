@@ -76,7 +76,15 @@ public static class BuildExtensions
 					if (fileResponse.IsSuccessStatusCode)
 					{
 						using ZipArchive archive = new(await fileResponse.Content.ReadAsStreamAsync());
-						archive.ExtractToDirectory(artifactsDirectory);
+						// The artifact can be untrusted, and a link in it could point a later read at any file of
+						// the runner. The upper half of the attributes is the Unix mode, where 0xA000 marks a link.
+						if (archive.Entries.Any(entry => ((entry.ExternalAttributes >> 16) & 0xF000) == 0xA000))
+						{
+							throw new InvalidOperationException(
+								$"The artifact #{artifactId} contains a symbolic link");
+						}
+
+						archive.ExtractToDirectory(artifactsDirectory, true);
 						Log.Information(
 							$"Extracted artifact #{artifactId} with {archive.Entries.Count} entries to {artifactsDirectory}:\n - {string.Join("\n - ", archive.Entries.Select(entry => $"{entry.Name} ({entry.Length})"))}");
 					}
