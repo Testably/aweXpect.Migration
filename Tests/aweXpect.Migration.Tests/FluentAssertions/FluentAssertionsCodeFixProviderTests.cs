@@ -14,88 +14,88 @@ public class FluentAssertionsCodeFixProviderTests
 	                                               b
 	                                               """.Contains('\r') ? "\r\n" : "\n";
 
-	[Theory]
-	[MemberData(nameof(TestCases.Basic), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Basic))]
 	public async Task ShouldApplyCodeFixForBasicTestCases(
 		string fluentAssertions,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Boolean), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Boolean))]
 	public async Task ShouldApplyCodeFixForBooleanTestCases(
 		string fluentAssertions,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Chronology), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Chronology))]
 	public async Task ShouldApplyCodeFixForChronologyTestCases(
 		string fluentAssertions,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Collection), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Collection))]
 	public async Task ShouldApplyCodeFixForCollectionTestCases(
 		string fluentAssertions,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Enums), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Enums))]
 	public async Task ShouldApplyCodeFixForEnumsTestCases(
 		string fluentAssertions,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Equivalency), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Equivalency))]
 	public async Task ShouldApplyCodeFixForEquivalencyTestCases(
 		string fluentAssertions,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Exceptions), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Exceptions))]
 	public async Task ShouldApplyCodeFixForExceptionsTestCases(
 		string fluentAssertions,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Legacy), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Legacy))]
 	public async Task ShouldApplyCodeFixForLegacyTestCases(
 		string fluentAssertions,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyLegacyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Numbers), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Numbers))]
 	public async Task ShouldApplyCodeFixForNumbersTestCases(
 		string fluentAssertions,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Strings), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Strings))]
 	public async Task ShouldApplyCodeFixForStringsTestCases(
 		string fluentAssertions,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(fluentAssertions, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.NoCodeFix), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.NoCodeFix))]
 	public async Task ShouldNotOfferCodeFix(string arrange, string fluentAssertions)
 	{
 		string source = $$"""
@@ -122,7 +122,7 @@ public class FluentAssertionsCodeFixProviderTests
 		await Verifier.VerifyCodeFixAsync(source, source);
 	}
 
-	[Fact]
+	[Test]
 	public async Task IgnoringCollectionOrder_ShouldAddUsingOnceForAllFixes() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -164,7 +164,7 @@ public class FluentAssertionsCodeFixProviderTests
 			"""
 		);
 
-	[Fact]
+	[Test]
 	public async Task IgnoringCollectionOrder_WhenNamespaceIsImported_ShouldNotAddUsing() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -211,7 +211,7 @@ public class FluentAssertionsCodeFixProviderTests
 			"""
 		);
 
-	[Fact]
+	[Test]
 	public async Task IgnoringCollectionOrder_ShouldAddUsingAfterGlobalUsingsAndKeepHeader() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -251,7 +251,7 @@ public class FluentAssertionsCodeFixProviderTests
 			"""
 		);
 
-	[Fact]
+	[Test]
 	public async Task ChainContinuingOnWhich_ShouldNotOfferCodeFix()
 	{
 		const string source = """
@@ -276,7 +276,7 @@ public class FluentAssertionsCodeFixProviderTests
 			[Verifier.Diagnostic().WithLocation(0), Verifier.Diagnostic().WithLocation(0),], source);
 	}
 
-	[Fact]
+	[Test]
 	public async Task ThrowsWithMessageAndBecause_ShouldKeepBecause() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -315,7 +315,7 @@ public class FluentAssertionsCodeFixProviderTests
 			"""
 		);
 
-	[Fact]
+	[Test]
 	public async Task ShouldApplyCodeFixInTheory() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -354,7 +354,7 @@ public class FluentAssertionsCodeFixProviderTests
 			"""
 		);
 
-	[Fact]
+	[Test]
 	public async Task ShouldSupportActions() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -395,7 +395,7 @@ public class FluentAssertionsCodeFixProviderTests
 			"""
 		);
 
-	[Fact]
+	[Test]
 	public async Task ShouldSupportBecauseWithParameters() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -433,7 +433,7 @@ public class FluentAssertionsCodeFixProviderTests
 		);
 
 
-	[Fact]
+	[Test]
 	public async Task ShouldSupportNullablePropertyAccess() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -486,7 +486,7 @@ public class FluentAssertionsCodeFixProviderTests
 			"""
 		);
 
-	[Fact]
+	[Test]
 	public async Task ThrowsWithMessage_ShouldApplyCorrectCodeFix() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -527,16 +527,16 @@ public class FluentAssertionsCodeFixProviderTests
 			"""
 		);
 
-	[Theory]
-	[InlineData("subject.Should().BeEquivalentTo(expected)",
+	[Test]
+	[Arguments("subject.Should().BeEquivalentTo(expected)",
 		"Expect.That(subject).IsEqualTo(expected)")]
-	[InlineData("subject.Should().NotBeEquivalentTo(expected)",
+	[Arguments("subject.Should().NotBeEquivalentTo(expected)",
 		"Expect.That(subject).IsNotEqualTo(expected)")]
-	[InlineData("subjects.Should().ContainEquivalentOf(expected)",
+	[Arguments("subjects.Should().ContainEquivalentOf(expected)",
 		"Expect.That(subjects).Contains(expected)")]
-	[InlineData("subjects.Should().NotContainEquivalentOf(expected)",
+	[Arguments("subjects.Should().NotContainEquivalentOf(expected)",
 		"Expect.That(subjects).DoesNotContain(expected)")]
-	[InlineData("subjects.Should().AllBeEquivalentTo(expected)",
+	[Arguments("subjects.Should().AllBeEquivalentTo(expected)",
 		"Expect.That(subjects).All().AreEqualTo(expected)")]
 	public async Task Equivalency_WhenTypeOverridesEquals_ShouldCompareWithEquals(
 		string fluentAssertions, string aweXpect) => await Verifier

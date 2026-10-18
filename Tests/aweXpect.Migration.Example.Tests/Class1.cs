@@ -1,12 +1,13 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
+using TUnit.Core;
 using Xunit;
 
 namespace aweXpect.Migration.Example.Tests;
 
 public class Class1
 {
-	[Fact]
+	[Test]
 	public void Test1()
 	{
 #pragma warning disable aweXpectM002
@@ -18,7 +19,7 @@ public class Class1
 #pragma warning restore aweXpectM003
 	}
 
-	[Fact]
+	[Test]
 	public async Task X()
 	{
 		int[] subject = [];

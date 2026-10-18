@@ -4,14 +4,14 @@
 
 ```powershell
 dotnet build aweXpect.Migration.slnx
-dotnet test Tests/aweXpect.Migration.Tests
-dotnet test Tests/aweXpect.Migration.Tests -f net10.0 --filter "FullyQualifiedName~XunitAssertionCodeFixProviderTests"
+dotnet test --project Tests/aweXpect.Migration.Tests
+dotnet test --project Tests/aweXpect.Migration.Tests -f net10.0 --treenode-filter "/*/*/XunitAssertionCodeFixProviderTests/*"
 ```
 
-- The test project is xUnit v3 on `Microsoft.NET.Test.Sdk`, so `dotnet test --filter` uses the VSTest filter syntax.
+- The test projects use TUnit and are executables of the Microsoft.Testing.Platform, which `global.json` selects for `dotnet test`. Filter with `--treenode-filter "/<assembly>/<namespace>/<class>/<method>"`; `dotnet run --project <project> -f net10.0 -- <options>` starts a single project directly.
 - Tests target `net8.0` and `net10.0`. Pass `-f` when only one runtime is installed.
 - The verifiers compile the test code against `ReferenceAssemblies.Net.Net100` plus the NuGet packages `xunit.v3` 1.1.0 and `FluentAssertions` 8.2.0 (7.2.0 for the `Legacy` cases). The first run downloads them into the NuGet cache, so it needs network access.
-- `Tests/aweXpect.Migration.Example.Tests` references the analyzers as a consumer would. Build it to see the diagnostics in a real project and to spot `CS9057` (Roslyn floor too high for the compiler in use). It is not run by the pipeline.
+- `Tests/aweXpect.Migration.Example.Tests` references the analyzers as a consumer would. Build it to see the diagnostics in a real project and to spot `CS9057` (Roslyn floor too high for the compiler in use). It is not run by the pipeline. It runs on TUnit like the other tests and references only the assertion package `xunit.v3.assert`, so that `aweXpectM003` has xUnit assertions to report.
 
 ## Build pipeline
 
@@ -28,8 +28,8 @@ Without a target the default `CodeAnalysis` runs, which starts a SonarCloud scan
 | Target         | Defined in              | What it does                                                                                                                                                                                                                  |
 |----------------|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `Compile`      | `Build.Compile.cs`      | Cleans `Artifacts/` and `TestResults/`, restores without cache, computes the version with GitVersion, builds the two analyzer projects and then the solution.                                                                 |
-| `UnitTests`    | `Build.UnitTest.cs`     | Runs `dotnet test` on `aweXpect.Migration.Tests` once per target framework with the `XPlat Code Coverage` collector; `.trx` files and coverage go to `TestResults/`.                                                          |
-| `CodeCoverage` | `Build.CodeCoverage.cs` | Runs `UnitTests` and merges the coverage into `TestResults/reports/OpenCover.xml` with ReportGenerator.                                                                                                                      |
+| `UnitTests`    | `Build.UnitTest.cs`     | Starts `aweXpect.Migration.Tests` with `dotnet run` once per target framework and writes `TestResults/<project>_<tfm>.trx` and `TestResults/<project>_<tfm>.cobertura.xml`.                                                   |
+| `CodeCoverage` | `Build.CodeCoverage.cs` | Runs `UnitTests` and merges the coverage into `TestResults/reports/SonarQube.xml` (Sonar generic coverage format) with ReportGenerator.                                                                                      |
 | `CodeAnalysis` | `Build.CodeAnalysis.cs` | Wraps `Compile` and `CodeCoverage` in a SonarCloud scan (project `Testably_aweXpect.Migration`). The scan is only completed on a server build.                                                                               |
 | `UpdateReadme` | `Build.Pack.cs`         | Writes `Artifacts/README.md`, the package readme: adds a changelog badge, drops the build and quality gate badges and rewrites `Docs/pages/` links to absolute GitHub URLs.                                                     |
 | `Pack`         | `Build.Pack.cs`         | Runs `UpdateReadme` and `Compile`, then moves the `.nupkg` and `.snupkg` of `aweXpect.Migration` to `Artifacts/Packages`.                                                                                                     |
@@ -45,7 +45,7 @@ GitVersion needs the full git history and tags, which is why CI checks out with 
 | `.github/workflows/notify-docs-site.yml`| Successful `Build` on `main`, manual     | Dispatches `extension-documentation-updated-event` to `Testably/Testably.Site`, which rebuilds the documentation.                                                                                                                                |
 
 - Actions are pinned to full commit SHAs with the version in a trailing comment; keep that when adding or updating an action.
-- Mergify (`.github/mergify.yml`) squash-merges Dependabot PRs once the three `Unit tests` checks pass. Dependabot (`.github/dependabot.yml`) runs weekly for GitHub Actions and NuGet, with groups for `Fallout*`, `xunit*` and `aweXpect*`.
+- Mergify (`.github/mergify.yml`) squash-merges Dependabot PRs once the three `Unit tests` checks pass. Dependabot (`.github/dependabot.yml`) runs weekly for GitHub Actions and NuGet, with groups for `Fallout*`, `tunit*`, `xunit*` and `aweXpect*`.
 
 ## Documentation
 

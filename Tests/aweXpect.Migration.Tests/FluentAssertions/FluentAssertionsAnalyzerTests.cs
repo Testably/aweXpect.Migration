@@ -6,7 +6,7 @@ namespace aweXpect.Migration.Tests.FluentAssertions;
 
 public class FluentAssertionsAnalyzerTests
 {
-	[Fact]
+	[Test]
 	public async Task ShouldSupportActions() => await Verifier
 		.VerifyAnalyzerAsync(
 			"""
@@ -31,7 +31,7 @@ public class FluentAssertionsAnalyzerTests
 				.WithLocation(0)
 		);
 
-	[Fact]
+	[Test]
 	public async Task WhenUsingAssertEqual_ShouldBeFlagged() => await Verifier
 		.VerifyAnalyzerAsync(
 			"""
@@ -55,7 +55,7 @@ public class FluentAssertionsAnalyzerTests
 				.WithLocation(0)
 		);
 
-	[Fact]
+	[Test]
 	public async Task WhenUsingAssertTrue_ShouldBeFlagged() => await Verifier
 		.VerifyAnalyzerAsync(
 			"""
@@ -78,7 +78,7 @@ public class FluentAssertionsAnalyzerTests
 				.WithLocation(0)
 		);
 
-	[Fact]
+	[Test]
 	public async Task WhenUsingNestedShould_ShouldOnlyBeFlaggedOnce() => await Verifier
 		.VerifyAnalyzerAsync(
 			"""
@@ -101,7 +101,7 @@ public class FluentAssertionsAnalyzerTests
 				.WithLocation(0)
 		);
 
-	[Fact]
+	[Test]
 	public async Task WhenUsingNullableProperties_ShouldBeFlagged() => await Verifier
 		.VerifyAnalyzerAsync(
 			"""

@@ -15,3 +15,14 @@ using [SonarCloud](https://sonarcloud.io/project/overview?id=Testably_aweXpect.M
 
 - solve all issues reported by SonarCloud
 - have a code coverage of > 90%
+
+### Running the tests
+The tests use [TUnit](https://tunit.dev/) on the Microsoft.Testing.Platform. Run all of them with:
+```
+dotnet test
+```
+
+To run only the tests of one class on one target framework, filter them by their tree node path (`/assembly/namespace/class/method`):
+```
+dotnet test --project Tests/aweXpect.Migration.Tests -f net10.0 --treenode-filter "/*/*/XunitAssertionCodeFixProviderTests/*"
+```

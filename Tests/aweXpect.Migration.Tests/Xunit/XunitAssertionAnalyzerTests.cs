@@ -6,7 +6,7 @@ namespace aweXpect.Migration.Tests.Xunit;
 
 public class XunitAssertionAnalyzerTests
 {
-	[Fact]
+	[Test]
 	public async Task WhenUsingAssertEqual_ShouldBeFlagged() => await Verifier
 		.VerifyAnalyzerAsync(
 			"""
@@ -29,7 +29,7 @@ public class XunitAssertionAnalyzerTests
 				.WithLocation(0)
 		);
 
-	[Fact]
+	[Test]
 	public async Task WhenUsingAssertTrue_ShouldBeFlagged() => await Verifier
 		.VerifyAnalyzerAsync(
 			"""

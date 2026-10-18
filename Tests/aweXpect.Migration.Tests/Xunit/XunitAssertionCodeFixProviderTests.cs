@@ -6,63 +6,63 @@ namespace aweXpect.Migration.Tests.Xunit;
 
 public class XunitAssertionCodeFixProviderTests
 {
-	[Theory]
-	[MemberData(nameof(TestCases.Basic), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Basic))]
 	public async Task ShouldApplyCodeFixForBasicTestCases(
 		string xunitAssertion,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(xunitAssertion, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Boolean), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Boolean))]
 	public async Task ShouldApplyCodeFixForBooleanTestCases(
 		string xunitAssertion,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(xunitAssertion, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Collections), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Collections))]
 	public async Task ShouldApplyCodeFixForCollectionTestCases(
 		string xunitAssertion,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(xunitAssertion, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Equality), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Equality))]
 	public async Task ShouldApplyCodeFixForEqualityTestCases(
 		string xunitAssertion,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(xunitAssertion, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Exceptions), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Exceptions))]
 	public async Task ShouldApplyCodeFixForExceptionTestCases(
 		string xunitAssertion,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(xunitAssertion, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Strings), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Strings))]
 	public async Task ShouldApplyCodeFixForStringTestCases(
 		string xunitAssertion,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(xunitAssertion, aweXpect, arrange, isAsync);
 
-	[Theory]
-	[MemberData(nameof(TestCases.Types), MemberType = typeof(TestCases))]
+	[Test]
+	[MethodDataSource(typeof(TestCases), nameof(TestCases.Types))]
 	public async Task ShouldApplyCodeFixForTypeTestCases(
 		string xunitAssertion,
 		string aweXpect,
 		string arrange,
 		bool isAsync) => await VerifyTestCase(xunitAssertion, aweXpect, arrange, isAsync);
 
-	[Fact]
+	[Test]
 	public async Task EqualWithPrecision_WithoutSystemNamespace_ShouldAddUsing() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
@@ -94,11 +94,11 @@ public class XunitAssertionCodeFixProviderTests
 			"""
 		);
 
-	[Theory]
-	[InlineData("Assert.Equal(\"a\", \"A\", ignoreCase: true)")]
-	[InlineData("Assert.Equal(\"a\", \"A\", StringComparer.OrdinalIgnoreCase)")]
-	[InlineData("Assert.Contains(\"a\", \"A\", StringComparison.OrdinalIgnoreCase)")]
-	[InlineData("Assert.Throws<ArgumentException>(testCode: () => {}, paramName: \"foo\")")]
+	[Test]
+	[Arguments("Assert.Equal(\"a\", \"A\", ignoreCase: true)")]
+	[Arguments("Assert.Equal(\"a\", \"A\", StringComparer.OrdinalIgnoreCase)")]
+	[Arguments("Assert.Contains(\"a\", \"A\", StringComparison.OrdinalIgnoreCase)")]
+	[Arguments("Assert.Throws<ArgumentException>(testCode: () => {}, paramName: \"foo\")")]
 	public async Task UnsupportedArguments_ShouldNotOfferCodeFix(string xunitAssertion)
 	{
 		string source = $$"""
@@ -119,7 +119,7 @@ public class XunitAssertionCodeFixProviderTests
 		await Verifier.VerifyCodeFixAsync(source, source);
 	}
 
-	[Fact]
+	[Test]
 	public async Task IsTypeWithNonConstantExactMatch_ShouldNotOfferCodeFix()
 	{
 		const string source = """
@@ -141,7 +141,7 @@ public class XunitAssertionCodeFixProviderTests
 		await Verifier.VerifyCodeFixAsync(source, source);
 	}
 
-	[Fact]
+	[Test]
 	public async Task ShouldApplyCodeFixInTheory() => await Verifier
 		.VerifyCodeFixAsync(
 			"""
