@@ -1,13 +1,15 @@
-﻿namespace aweXpect.Migration.Tests.Xunit;
+﻿using System.Collections.Generic;
+
+namespace aweXpect.Migration.Tests.Xunit;
 
 public static class TestCases
 {
 	/// <summary>
 	///     <see href="https://github.com/xunit/assert.xunit/tree/main" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Basic()
+	public static List<(string, string, string, bool)> Basic()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddTestCase("",
 			"Assert.Fail(\"foo\")",
 			"Fail.Test(\"foo\")");
@@ -32,9 +34,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://github.com/xunit/assert.xunit/blob/main/BooleanAsserts.cs" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Boolean()
+	public static List<(string, string, string, bool)> Boolean()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddTestCase("bool subject = false;",
 			"Assert.True(subject)",
 			"Expect.That(subject).IsTrue()");
@@ -53,9 +55,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://github.com/xunit/assert.xunit/blob/main/CollectionAsserts.cs" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Collections()
+	public static List<(string, string, string, bool)> Collections()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddTestCase("int[] subject = [1, 2,];",
 			"Assert.Distinct(subject)",
 			"Expect.That(subject).All().AreUnique()");
@@ -80,9 +82,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://github.com/xunit/assert.xunit/blob/main/EqualityAsserts.cs" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Equality()
+	public static List<(string, string, string, bool)> Equality()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddTestCase("",
 			"Assert.Equal(1, 2)",
 			"Expect.That(2).IsEqualTo(1)");
@@ -122,9 +124,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://github.com/xunit/assert.xunit/blob/main/ExceptionAsserts.cs" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Exceptions()
+	public static List<(string, string, string, bool)> Exceptions()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddTestCase("Action callback = () => {};",
 			"Assert.ThrowsAny<ArgumentException>(callback)",
 			"Expect.That(callback).Throws<ArgumentException>()");
@@ -155,9 +157,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://github.com/xunit/assert.xunit/blob/main/StringAsserts.cs" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Strings()
+	public static List<(string, string, string, bool)> Strings()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddTestCase("",
 			"Assert.Contains(\"oo\", \"foo\")",
 			"Expect.That(\"foo\").Contains(\"oo\")");
@@ -182,9 +184,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://github.com/xunit/assert.xunit/blob/main/TypeAsserts.cs" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Types()
+	public static List<(string, string, string, bool)> Types()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddTestCase("",
 			"Assert.IsAssignableFrom<ArgumentException>(new Exception())",
 			"Expect.That(new Exception()).Is<ArgumentException>()");
@@ -227,13 +229,13 @@ public static class TestCases
 		return theoryData;
 	}
 
-	private static void AddTestCase(this TheoryData<string, string, string, bool> theoryData,
+	private static void AddTestCase(this List<(string, string, string, bool)> theoryData,
 		string arrange,
 		string actual,
 		string expected,
 		bool isAsync = false)
-		=> theoryData.Add(
+		=> theoryData.Add((
 			actual,
 			expected,
-			arrange, isAsync);
+			arrange, isAsync));
 }

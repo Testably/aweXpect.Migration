@@ -6,7 +6,7 @@ aweXpect.Migration ships Roslyn analyzers and code fixers that rewrite FluentAss
 
 - `global.json` pins the .NET SDK `10.0.300` with `rollForward: latestPatch`. Tests target `net8.0` and `net10.0`, so both runtimes must be installed (CI installs `8.0.x` and `10.0.3xx`).
 - Package versions are managed centrally in `Directory.Packages.props`; never put a `Version` on a `PackageReference`.
-- `Source/Directory.Build.props` sets `netstandard2.0`, `LangVersion latest`, XML docs and `GeneratePackageOnBuild`. `Tests/Directory.Build.props` sets the test frameworks, xUnit v3 and aweXpect.
+- `Source/Directory.Build.props` sets `netstandard2.0`, `LangVersion latest`, XML docs and `GeneratePackageOnBuild`. `Tests/Directory.Build.props` sets the test frameworks, TUnit and aweXpect. `global.json` runs `dotnet test` on the Microsoft.Testing.Platform.
 - Build the whole solution with `dotnet build aweXpect.Migration.slnx`.
 
 ## Design goals
@@ -24,7 +24,7 @@ Correctness is a must. The other goals are strong defaults and win in this order
 
 ## Validation
 
-- Run `dotnet test Tests/aweXpect.Migration.Tests` before pushing. For a quick loop, add `-f net10.0 --filter "FullyQualifiedName~<Class>"`.
+- Run `dotnet test --project Tests/aweXpect.Migration.Tests` before pushing. For a quick loop, add `-f net10.0 --treenode-filter "/*/*/<Class>/*"`.
 - Analyzer tests use `CSharpAnalyzerVerifier<TAnalyzer>` with `{|#0:...|}` markup and `Verifier.Diagnostic(Rules.X).WithLocation(0)`.
 - Code fix rewrites are data-driven: add a case to `Tests/aweXpect.Migration.Tests/FluentAssertions/TestCases.cs` (`AddWithBecause`, a `{0}` placeholder generates the variant with a `because` argument) or `Tests/aweXpect.Migration.Tests/Xunit/TestCases.cs` (`AddTestCase`). Cases that must not get a fix go to `TestCases.NoCodeFix` or a dedicated `..._ShouldNotOfferCodeFix` test.
 - `aweXpect.Migration.Example.Tests` is a manual playground, not part of the pipeline's unit tests.

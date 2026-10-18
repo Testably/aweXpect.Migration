@@ -30,15 +30,15 @@
 ## Tests
 
 - `CSharpAnalyzerVerifier<TAnalyzer>` and `CSharpCodeFixVerifier<TAnalyzer, TCodeFix>` wrap `Microsoft.CodeAnalysis.Testing`. They compile the test code against .NET 10 reference assemblies, the `xunit.v3` and `FluentAssertions` packages, and the aweXpect assemblies of the test project. `VerifyLegacyCodeFixAsync` uses FluentAssertions 7.2.0 instead of 8.2.0.
-- Code fix tests are theories over `TestCases.cs` in each folder. Each case is `(arrange, original assertion, expected rewrite)`; the theory embeds them in a test method and checks the fix. `AddWithBecause` (FluentAssertions) turns a `{0}` placeholder into one case without and one with a `"because foo"` argument.
-- Edge cases that need a full source file (usings, theories, nullable access, cases without a fix) are separate `[Fact]` tests in the same class.
+- Code fix tests are TUnit tests with a `[MethodDataSource]` over `TestCases.cs` in each folder. Each case is a tuple `(original assertion, expected rewrite, arrange, isAsync)`; the test embeds it in a test method and checks the fix. `AddWithBecause` (FluentAssertions) turns a `{0}` placeholder into one case without and one with a `"because foo"` argument.
+- Edge cases that need a full source file (usings, theories, nullable access, cases without a fix) are separate `[Test]` methods in the same class.
 
 ## Adding a rewrite to an existing rule
 
 1. Add a branch to the method-name `switch` in `FluentAssertionsCodeFixProvider.GetNewExpressionFor` or `XunitAssertionCodeFixProvider.GetNewExpression`. Return `null` whenever the call cannot be translated without losing an argument or changing behaviour unnoticed.
 2. Add cases to the matching category in `TestCases.cs`, including the `because` variant for FluentAssertions. Add overloads that must stay unfixed to `TestCases.NoCodeFix` or a `..._ShouldNotOfferCodeFix` test.
 3. Add a row to the table in `Docs/pages/01-fluentassertions.md` or `Docs/pages/02-xunit.md`. If the aweXpect expectation behaves differently in some cases, link the row to a new entry under "Behavioural differences".
-4. Run `dotnet test Tests/aweXpect.Migration.Tests`.
+4. Run `dotnet test --project Tests/aweXpect.Migration.Tests`.
 
 ## Adding a rule for a new source library
 

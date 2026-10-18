@@ -1,13 +1,15 @@
-﻿namespace aweXpect.Migration.Tests.FluentAssertions;
+﻿using System.Collections.Generic;
+
+namespace aweXpect.Migration.Tests.FluentAssertions;
 
 public static class TestCases
 {
 	/// <summary>
 	///     <see href="https://fluentassertions.com/basicassertions/" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Basic()
+	public static List<(string, string, string, bool)> Basic()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddWithBecause("object subject = new object();",
 			"subject.Should().BeNull()",
 			"Expect.That(subject).IsNull()");
@@ -53,9 +55,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://fluentassertions.com/booleans/" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Boolean()
+	public static List<(string, string, string, bool)> Boolean()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddWithBecause("bool subject = false;",
 			"subject.Should().BeTrue({0})",
 			"Expect.That(subject).IsTrue()");
@@ -77,9 +79,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://fluentassertions.com/collections/" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Collection()
+	public static List<(string, string, string, bool)> Collection()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddWithBecause("int[] subject = [1, 2,];",
 			"subject.Should().HaveCount(1, {0})",
 			"Expect.That(subject).HasCount(1)");
@@ -248,9 +250,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://fluentassertions.com/collections/" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Enums()
+	public static List<(string, string, string, bool)> Enums()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddWithBecause("DayOfWeek subject = DayOfWeek.Monday;",
 			"subject.Should().BeDefined({0})",
 			"Expect.That(subject).IsDefined()");
@@ -284,9 +286,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://fluentassertions.com/exceptions/" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Equivalency()
+	public static List<(string, string, string, bool)> Equivalency()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddWithBecause("object subject = new object();object expected = new object();",
 			"subject.Should().BeEquivalentTo(expected, {0})",
 			"Expect.That(subject).IsEquivalentTo(expected, o => o.IgnoringCollectionOrder())");
@@ -341,9 +343,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://fluentassertions.com/exceptions/" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Exceptions()
+	public static List<(string, string, string, bool)> Exceptions()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddWithBecause("Action callback = () => {};",
 			"callback.Should().NotThrow({0})",
 			"Expect.That(callback).DoesNotThrow()");
@@ -387,36 +389,36 @@ public static class TestCases
 	/// <summary>
 	///     Assertions without a faithful rewrite, for which no code fix is offered.
 	/// </summary>
-	public static TheoryData<string, string> NoCodeFix()
+	public static List<(string, string)> NoCodeFix()
 	{
-		TheoryData<string, string> theoryData = new();
-		theoryData.Add("Action callback = () => {};",
-			"callback.Should().Throw<ArgumentException>().Where(e => e.Message == \"foo\")");
-		theoryData.Add("Action callback = () => {};",
-			"callback.Should().Throw<ArgumentException>().WithInnerException<ArgumentException>().WithMessage(\"foo\")");
-		theoryData.Add("Action callback = () => {};",
-			"callback.Should().Throw<ArgumentException>().WithInnerExceptionExactly<ArgumentException>()");
-		theoryData.Add("string[] subject = [];",
-			"subject.Should().BeEquivalentTo(\"a\", \"b\")");
-		theoryData.Add("Type subject = typeof(string);",
-			"subject.Should().BeAssignableTo<IComparable>()");
-		theoryData.Add("Type subject = typeof(string);",
-			"subject.Should().NotBeAssignableTo(typeof(IComparable))");
-		theoryData.Add("Exception subject = new();Exception expected = new();",
-			"subject.Should().BeEquivalentTo(expected, o => o.Excluding(e => e.Message))");
-		theoryData.Add("Exception[] subject = [];Exception[] expected = [];",
-			"subject.Should().BeEquivalentTo(expected, o => o.WithStrictOrdering().Excluding(e => e.Message))");
-		theoryData.Add("object[] subject = [];object expected = new();",
-			"subject.Should().ContainEquivalentOf(expected, o => o.Excluding(e => e.GetType()))");
+		List<(string, string)> theoryData = new();
+		theoryData.Add(("Action callback = () => {};",
+			"callback.Should().Throw<ArgumentException>().Where(e => e.Message == \"foo\")"));
+		theoryData.Add(("Action callback = () => {};",
+			"callback.Should().Throw<ArgumentException>().WithInnerException<ArgumentException>().WithMessage(\"foo\")"));
+		theoryData.Add(("Action callback = () => {};",
+			"callback.Should().Throw<ArgumentException>().WithInnerExceptionExactly<ArgumentException>()"));
+		theoryData.Add(("string[] subject = [];",
+			"subject.Should().BeEquivalentTo(\"a\", \"b\")"));
+		theoryData.Add(("Type subject = typeof(string);",
+			"subject.Should().BeAssignableTo<IComparable>()"));
+		theoryData.Add(("Type subject = typeof(string);",
+			"subject.Should().NotBeAssignableTo(typeof(IComparable))"));
+		theoryData.Add(("Exception subject = new();Exception expected = new();",
+			"subject.Should().BeEquivalentTo(expected, o => o.Excluding(e => e.Message))"));
+		theoryData.Add(("Exception[] subject = [];Exception[] expected = [];",
+			"subject.Should().BeEquivalentTo(expected, o => o.WithStrictOrdering().Excluding(e => e.Message))"));
+		theoryData.Add(("object[] subject = [];object expected = new();",
+			"subject.Should().ContainEquivalentOf(expected, o => o.Excluding(e => e.GetType()))"));
 		return theoryData;
 	}
 
 	/// <summary>
 	///     <see href="https://fluentassertions.com/numerictypes/" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Numbers()
+	public static List<(string, string, string, bool)> Numbers()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddWithBecause("int subject = 1;",
 			"subject.Should().BePositive({0})",
 			"Expect.That(subject).IsPositive()");
@@ -483,9 +485,9 @@ public static class TestCases
 	/// <summary>
 	///     Legacy expectations on FluentAssertions 7.2.x
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Legacy()
+	public static List<(string, string, string, bool)> Legacy()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddWithBecause("int subject = 1;int expected = 2;",
 			"subject.Should().BeLessOrEqualTo(expected, {0})",
 			"Expect.That(subject).IsLessThanOrEqualTo(expected)");
@@ -498,9 +500,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://fluentassertions.com/datetimespans/" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Chronology()
+	public static List<(string, string, string, bool)> Chronology()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddWithBecause("DateTime subject = DateTime.Now;DateTime expected = DateTime.Now;",
 			"subject.Should().BeAfter(expected, {0})",
 			"Expect.That(subject).IsAfter(expected)");
@@ -576,9 +578,9 @@ public static class TestCases
 	/// <summary>
 	///     <see href="https://fluentassertions.com/strings/" />
 	/// </summary>
-	public static TheoryData<string, string, string, bool> Strings()
+	public static List<(string, string, string, bool)> Strings()
 	{
-		TheoryData<string, string, string, bool> theoryData = new();
+		List<(string, string, string, bool)> theoryData = new();
 		theoryData.AddWithBecause("string subject = \"foo\";",
 			"subject.Should().BeNull({0})",
 			"Expect.That(subject).IsNull()");
@@ -705,7 +707,7 @@ public static class TestCases
 		return theoryData;
 	}
 
-	private static void AddWithBecause(this TheoryData<string, string, string, bool> theoryData,
+	private static void AddWithBecause(this List<(string, string, string, bool)> theoryData,
 		string arrange,
 		string actual,
 		string expected,
@@ -713,32 +715,32 @@ public static class TestCases
 	{
 		if (actual.Contains("({0})"))
 		{
-			theoryData.Add(
+			theoryData.Add((
 				string.Format(actual, ""),
 				expected,
-				arrange, isAsync);
-			theoryData.Add(
+				arrange, isAsync));
+			theoryData.Add((
 				string.Format(actual, "\"because foo\""),
 				expected + ".Because(\"because foo\")",
-				arrange, isAsync);
+				arrange, isAsync));
 		}
 		else if (actual.Contains(", {0})") || actual.Contains(",{0})"))
 		{
-			theoryData.Add(
+			theoryData.Add((
 				actual.Replace(", {0})", ")").Replace(",{0})", ")"),
 				expected,
-				arrange, isAsync);
-			theoryData.Add(
+				arrange, isAsync));
+			theoryData.Add((
 				string.Format(actual, "\"because foo\""),
 				expected + ".Because(\"because foo\")",
-				arrange, isAsync);
+				arrange, isAsync));
 		}
 		else
 		{
-			theoryData.Add(
+			theoryData.Add((
 				actual,
 				expected,
-				arrange, isAsync);
+				arrange, isAsync));
 		}
 	}
 }
