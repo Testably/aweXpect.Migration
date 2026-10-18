@@ -14,7 +14,8 @@ namespace aweXpect.Migration.Analyzers;
 public class FluentAssertionsAnalyzer : DiagnosticAnalyzer
 {
 	/// <inheritdoc />
-	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = [Rules.FluentAssertionsRule,];
+	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+		ImmutableArray.Create(Rules.FluentAssertionsRule);
 
 	/// <inheritdoc />
 	public override void Initialize(AnalysisContext context)

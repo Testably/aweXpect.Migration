@@ -18,7 +18,8 @@ namespace aweXpect.Migration.Analyzers;
 public abstract class AssertionCodeFixProvider(DiagnosticDescriptor rule) : CodeFixProvider
 {
 	/// <inheritdoc />
-	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = [rule.Id,];
+	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
+		ImmutableArray.Create(rule.Id);
 
 	/// <inheritdoc />
 	public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
