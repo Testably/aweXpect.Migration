@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+	<PropertyGroup>
+		<DevelopmentDependency>true</DevelopmentDependency>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\aweXpect.Migration.Analyzers\aweXpect.Migration.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
 		<None Include="$(MSBuildProjectDirectory)\..\aweXpect.Migration.Analyzers\bin\$(Configuration)\netstandard2.0\aweXpect.Migration.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
