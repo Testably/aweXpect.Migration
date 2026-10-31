@@ -1,3 +1,7 @@
+---
+description: The xUnit assertions that aweXpect.Migration rewrites to aweXpect, and the cases in which the rewrite behaves differently.
+---
+
 # xUnit
 
 The fixer rewrites each `Xunit.Assert.*` call into the corresponding
@@ -14,8 +18,7 @@ await Expect.That(actual).IsEqualTo(expected);
 await Expect.That(callback).ThrowsExactly<ArgumentException>();
 ```
 
-A note in the last column marks a rewrite that behaves differently in some cases; it links to the
-matching entry under [Behavioural differences](#behavioural-differences).
+A note in the last column marks a rewrite that behaves differently in some cases; it links to the matching entry under [Behavioral differences](#behavioral-differences).
 
 ## Basic
 
@@ -102,11 +105,9 @@ The non-generic overloads (`Assert.IsType(typeof(T), actual)` etc.) are migrated
 non-generic aweXpect form. An `exactMatch` argument that is not a `true` or `false` literal leaves the
 assertion for manual migration.
 
-## Behavioural differences
+## Behavioral differences
 
-Compared with xUnit 3, a few rewritten assertions pass or fail for different inputs than the original.
-These follow from the rules listed under
-[Behavioural differences](01-fluentassertions.md#behavioural-differences) for FluentAssertions.
+Compared with xUnit 3, a few rewritten assertions pass or fail for different inputs than the original. These follow from the rules listed under [Behavioral differences](./01-fluentassertions.md#behavioral-differences) for FluentAssertions.
 
 ### Nested collections and sets
 
@@ -116,8 +117,8 @@ collection enumerates them, also for a `HashSet<T>`. Use equivalency for nested 
 `InAnyOrder()` for sets:
 
 ```csharp
-await Expect.That(actual).IsEquivalentTo(expected);
-await Expect.That(actualSet).IsEqualTo(expectedSet).InAnyOrder();
+await That(actual).IsEquivalentTo(expected);
+await That(actualSet).IsEqualTo(expectedSet).InAnyOrder();
 ```
 
 ### Numbers of different types
@@ -144,5 +145,5 @@ nothing.
 type to inspect. Allow `null` explicitly where it is acceptable:
 
 ```csharp
-await Expect.That(actual).IsNull().Or.DoesNotContain("x");
+await That(actual).IsNull().Or.DoesNotContain("x");
 ```

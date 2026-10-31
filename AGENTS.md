@@ -19,8 +19,8 @@ Correctness is a must. The other goals are strong defaults and win in this order
 - Roslyn floor: `MinimumRoslynVersion` in `Directory.Build.props` is the minimum compiler a consumer needs. The `Microsoft.CodeAnalysis.*` references in `Source/` use it as `VersionOverride`, so an API above the floor fails the build; the tests keep the newer versions from `Directory.Packages.props`. A compiler older than the referenced Roslyn skips the analyzer with `CS9057`. Raise the floor only when a needed API requires it, after checking which SDKs still have to be supported. The unit tests load Roslyn in-process and do not catch this; look for `CS9057` in the build output of `aweXpect.Migration` and `aweXpect.Migration.Example.Tests`.
 - Diagnostic IDs use the `aweXpectM` prefix with three digits (`aweXpectM002` FluentAssertions, `aweXpectM003` xUnit), all in the `Usage` category, declared in `Source/aweXpect.Migration.Analyzers/Rules.cs`. Titles, messages and descriptions live in `Resources.resx` as `<id>Title`, `<id>MessageFormat` and `<id>Description`. Never reuse or renumber an ID; `aweXpect0001` belongs to the aweXpect package itself.
 - Analyzer release tracking: `Microsoft.CodeAnalysis.Analyzers` picks up `AnalyzerReleases.Shipped.md` and `AnalyzerReleases.Unshipped.md`. Descriptors are created through a helper, so the build does not flag missing entries (RS2000); add new or changed rules to `AnalyzerReleases.Unshipped.md` by hand.
-- A code fix must be faithful: when a rewrite would drop an argument or change semantics silently, return the unchanged document so no fix is offered. Documented behavioural differences are fine.
-- Every supported rewrite has a row in `Docs/pages/01-fluentassertions.md` or `Docs/pages/02-xunit.md`, plus an entry under "Behavioural differences" when the result behaves differently. These pages are published to the docs site.
+- A code fix must be faithful: when a rewrite would drop an argument or change semantics silently, return the unchanged document so no fix is offered. Documented behavioral differences are fine.
+- Every supported rewrite has a row in `Docs/pages/01-fluentassertions.md` or `Docs/pages/02-xunit.md`, plus an entry under "Behavioral differences" when the result behaves differently. These pages are published to the docs site.
 
 ## Validation
 
@@ -35,6 +35,18 @@ Correctness is a must. The other goals are strong defaults and win in this order
 - Line endings: `.editorconfig` sets CRLF and tab indentation; the index stores LF (`* text=auto`). Raw string literals in tests take the checkout's line endings, which is why `FluentAssertionsCodeFixProviderTests` derives `SourceNewLine` instead of hard-coding `\r\n`. Edit such files with an editor tool, not `sed -i`.
 - BOM: most C# files under `Source/` and `Tests/` start with a UTF-8 BOM, others do not. Keep each file's existing state. PowerShell rewrites (`Set-Content`, `Out-File`) add or strip BOMs; check `git diff` for a changed first line (U+FEFF) before committing.
 - No em-dashes in docs, README or XML documentation comments.
+
+## Documentation
+
+Pages under `Docs/pages` are published on docs.testably.org and follow the [docs style guide](https://github.com/Testably/Testably.Site/blob/main/Docs/style-guide.md). The key rules:
+
+- US English, sentence case for headings and labels, no em dashes, one line per paragraph.
+- A `description` in the front matter of every page; the H1 is the title; order with unique `NN-` prefixes.
+- Relative file links within the repository, site-absolute `/Library/...` links across libraries.
+- Install instructions only through `<PackageInstall package="..." />`, never hand-written commands or NuGet badges.
+- Examples check results with `await That(...)`; complete examples use TUnit `[Test]`.
+
+The pages are published as the migration section of aweXpect (`/aweXpect/migration/`), next to the upgrade guides of the aweXpect repository, which `00-index.md` links with relative paths as they are on the site. Migration pages show the code of the source library before the rewrite. `README.md` is the GitHub and NuGet landing page and is maintained separately from `Docs/pages/00-index.md`; keep their content in sync by hand.
 
 ## Git workflow
 

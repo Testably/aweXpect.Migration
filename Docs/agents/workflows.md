@@ -49,6 +49,6 @@ GitVersion needs the full git history and tags, which is why CI checks out with 
 
 ## Documentation
 
-- `README.md` is the package readme (through `UpdateReadme`) and the landing page of the docs site: `Docs/pages/00-index.md` only contains a `{README}` placeholder.
-- `Docs/pages/` is published to https://docs.testably.org/aweXpect/Migration by `Testably/Testably.Site`; `_category_.json` sets the sidebar label and position. There is no local docs build and code fences are not compiled, so check snippets against the test cases by hand.
+- `README.md` is the package readme (through `UpdateReadme`) and the GitHub landing page. `Docs/pages/00-index.md` is the landing page of the docs site and is maintained separately; keep both in sync by hand. Both follow the [docs style guide](https://github.com/Testably/Testably.Site/blob/main/Docs/style-guide.md); the README links to the docs with full `https://docs.testably.org/...` URLs.
+- `Docs/pages/` is published to https://docs.testably.org/aweXpect/migration/ by `Testably/Testably.Site`; `_category_.json` sets the sidebar label and position. There is no local docs build and code fences are not compiled, so check snippets against the test cases by hand.
 - `Docs/agents/` holds these guides for contributors and agents and is not published.

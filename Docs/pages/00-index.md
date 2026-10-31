@@ -1,15 +1,14 @@
 ---
-title: Migration
+description: Migrate the assertions of FluentAssertions and xUnit to aweXpect with the analyzers and code fixes of aweXpect.Migration.
 ---
 
 import PackageInstall from '@site/src/components/PackageInstall';
 
-`aweXpect.Migration` is a Roslyn analyzer that migrates assertions from [FluentAssertions](https://fluentassertions.com/)
-and [xUnit](https://xunit.net/) to aweXpect. It flags each assertion it can migrate, and its code fix rewrites the call
-site to the aweXpect equivalent.
+# Migration
 
-Upgrading from an older aweXpect version instead? See the upgrade guides
-[from aweXpect 2.x](./03-from-awexpect-2.md) and [from aweXpect 3.x](./04-from-awexpect-3.md).
+`aweXpect.Migration` is a Roslyn analyzer that migrates assertions from [FluentAssertions](https://fluentassertions.com/) and [xUnit](https://xunit.net/) to [aweXpect](/aweXpect). It reports each assertion of these libraries, and its code fix rewrites the call site to the aweXpect equivalent where it knows one.
+
+Upgrading from an older aweXpect version instead? See the upgrade guides [from aweXpect 2.x](./03-from-awexpect-2.md) and [from aweXpect 3.x](./04-from-awexpect-3.md).
 
 ## Installation
 
@@ -30,6 +29,8 @@ further edits:
 global using System.Threading.Tasks;
 global using aweXpect;
 ```
+
+The code fix writes `Expect.That(...)`. The hand-written examples under "Behavioral differences" use the shorter `That(...)` and assume `global using static aweXpect.Expect;` as well.
 
 ## How it works
 
