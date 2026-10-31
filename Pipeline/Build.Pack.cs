@@ -46,8 +46,7 @@ partial class Build
 					continue;
 				}
 
-				sb.AppendLine(line.Replace("](Docs/pages/",
-					"](https://github.com/Testably/aweXpect.Migration/blob/main/Docs/pages/"));
+				sb.AppendLine(line);
 			}
 
 			File.WriteAllText(ArtifactsDirectory / "README.md", sb.ToString());
