@@ -1,3 +1,7 @@
+---
+description: The FluentAssertions assertions that aweXpect.Migration rewrites to aweXpect, and the cases in which the rewrite behaves differently.
+---
+
 # FluentAssertions
 
 The fixer rewrites the entire `.Should()` chain in one step: the `Should()` call is dropped,
@@ -19,8 +23,7 @@ FluentAssertions documentation pages. Most of the basic assertions (`Be`, `NotBe
 A chain that continues on a second `.Should()`, e.g. after `.Which`, is left for manual migration, as is
 any call the fixer cannot translate without losing an argument.
 
-A note in the last column marks a rewrite that behaves differently in some cases; it links to the
-matching entry under [Behavioural differences](#behavioural-differences).
+A note in the last column marks a rewrite that behaves differently in some cases; it links to the matching entry under [Behavioral differences](#behavioral-differences).
 
 ## Equality
 
@@ -70,10 +73,7 @@ compared with options ignores case only when the options contain `IgnoringCase()
 | `o => o.IgnoringTrailingWhitespace()` | `.IgnoringTrailingWhiteSpace()` |
 | `o => o.IgnoringNewlineStyle()`       | `.IgnoringNewlineStyle()`       |
 
-For structural comparisons, options other than `WithStrictOrdering()` and `WithoutStrictOrdering()` have
-no automatic translation, so no code fix is offered. `NotBeEquivalentTo` is translated symmetrically
-(`IsNotEqualTo` / `IsNotEquivalentTo`). See also [Structural equivalency](#structural-equivalency) under the
-behavioural differences.
+For structural comparisons, options other than `WithStrictOrdering()` and `WithoutStrictOrdering()` have no automatic translation, so no code fix is offered. `NotBeEquivalentTo` is translated symmetrically (`IsNotEqualTo` / `IsNotEquivalentTo`). See also [Structural equivalency](#structural-equivalency) under the behavioral differences.
 
 ## Null and emptiness
 
@@ -204,8 +204,7 @@ compared by value (see [Equivalency](#equivalency)) and with `o => o.WithStrictO
 
 ## Collections
 
-In addition to the containment and ordering assertions above, these collection-specific forms are
-recognised:
+In addition to the containment and ordering assertions above, these collection-specific forms are recognized:
 
 | FluentAssertions construct                                               | Rewritten to                                                                    | Note                                     |
 |--------------------------------------------------------------------------|---------------------------------------------------------------------------------|------------------------------------------|
@@ -313,7 +312,7 @@ subject.Should().Be(expected, "because the value is {0}", value);
 await Expect.That(subject).IsEqualTo(expected).Because($"because the value is {value}");
 ```
 
-## Behavioural differences
+## Behavioral differences
 
 Compared with FluentAssertions 8, a few rewritten assertions pass or fail for different inputs than the
 original. These are choices aweXpect makes on purpose, and the fixer cannot bridge them. Most follow from
@@ -341,7 +340,7 @@ a few rules:
 equals itself and nothing else. Add `IsNotNaN()` where a `NaN` subject has to fail:
 
 ```csharp
-await Expect.That(subject).IsNotNaN().And.IsNotEqualTo(expected).Within(tolerance);
+await That(subject).IsNotNaN().And.IsNotEqualTo(expected).Within(tolerance);
 ```
 
 #### Integral tolerances
@@ -353,7 +352,7 @@ negative tolerance is a malformed expectation.
 #### Numbers of different types
 
 `IsOneOf` on an `object` subject compares numbers by value, like `IsEqualTo`, so
-`Expect.That((object)1).IsOneOf(1L, 2L)` passes where `BeOneOf` fails. The rewrite of
+`That((object)1).IsOneOf(1L, 2L)` passes where `BeOneOf` fails. The rewrite of
 `NotContain(collection)` uses `IsOneOf` as well and therefore also rejects an item `1` for an unexpected
 `1L`. aweXpect applies one rule to all equality expectations on `object`.
 
@@ -368,8 +367,8 @@ expectation that inspects the content has nothing to inspect in `null`. Allow `n
 is acceptable:
 
 ```csharp
-await Expect.That(subject).IsNull().Or.IsNotEmpty();
-await Expect.That(subject).IsNull().Or.Contains("x").AtMost().Once();
+await That(subject).IsNull().Or.IsNotEmpty();
+await That(subject).IsNull().Or.Contains("x").AtMost().Once();
 ```
 
 ### Type checks
@@ -382,7 +381,7 @@ FluentAssertions checks the type that a `System.Type` subject describes, so
 `NotBeAssignableTo`. No code fix is offered; migrate such assertions by hand:
 
 ```csharp
-await Expect.That(typeof(IComparable).IsAssignableFrom(subject)).IsTrue();
+await That(typeof(IComparable).IsAssignableFrom(subject)).IsTrue();
 ```
 
 ### Numbers
@@ -423,7 +422,7 @@ type. `All().Are<T>()` and `All().AreExactly<T>()` check the runtime type of eac
 type of a `Type` object is `RuntimeType`. Check the described types explicitly:
 
 ```csharp
-await Expect.That(types).All().Satisfy(type => typeof(Exception).IsAssignableFrom(type));
+await That(types).All().Satisfy(type => typeof(Exception).IsAssignableFrom(type));
 ```
 
 ### Structural equivalency
@@ -438,7 +437,7 @@ The following differences remain:
   overrides `Equals` with `Equals`; aweXpect compares its members, so an `Equals` that ignores a member no
   longer hides a difference in it. Ask for the type's own equality explicitly:
   ```csharp
-  await Expect.That(subject).IsEquivalentTo(expected, o => o
+  await That(subject).IsEquivalentTo(expected, o => o
       .IgnoringCollectionOrder()
       .For<Money>(x => x with { ComparisonType = EquivalencyComparisonType.ByValue }));
   ```
@@ -455,7 +454,7 @@ compares the exception the delegate actually threw, so `Throws<ArgumentException
 `DoesNotThrow<ArgumentException>()` passes. Expect the aggregate and its inner exception explicitly:
 
 ```csharp
-await Expect.That(callback).Throws<AggregateException>().WithInner<ArgumentException>();
+await That(callback).Throws<AggregateException>().WithInner<ArgumentException>();
 ```
 
 ### Dates and times
@@ -470,5 +469,5 @@ ordering expectations (`IsAfter`, `IsBefore` and their variants) fail for such a
 with both. Convert the values before comparing them:
 
 ```csharp
-await Expect.That(subject.ToUniversalTime()).IsAfter(expected.ToUniversalTime());
+await That(subject.ToUniversalTime()).IsAfter(expected.ToUniversalTime());
 ```

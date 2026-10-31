@@ -88,8 +88,8 @@ dotnet format analyzers --diagnostics aweXpect0001 --severity warn
 The rewrites for each source library, and the cases in which the migrated expectation behaves
 differently, are listed on separate pages:
 
-- [Migrating from FluentAssertions](Docs/pages/01-fluentassertions.md)
-- [Migrating from xUnit](Docs/pages/02-xunit.md)
+- [Migrating from FluentAssertions](https://docs.testably.org/aweXpect/migration/fluentassertions)
+- [Migrating from xUnit](https://docs.testably.org/aweXpect/migration/xunit)
 
 ## Removing `aweXpect.Migration` again
 
