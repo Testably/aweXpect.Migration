@@ -13,10 +13,13 @@ Upgrading from an older aweXpect version instead? See the upgrade guides
 
 ## Installation
 
-Install aweXpect (the assertion library you are migrating *to*) and `aweXpect.Migration` (the analyzers and code
-fixers) into the test project you want to migrate:
+Install aweXpect (the assertion library you are migrating *to*) into the test project you want to migrate:
 
-<PackageInstall package={['aweXpect', 'aweXpect.Migration']} />
+<PackageInstall package="aweXpect" />
+
+Then add `aweXpect.Migration` (the analyzers and code fixers) as a development dependency:
+
+<PackageInstall package="aweXpect.Migration" developmentDependency />
 
 `aweXpect.Migration` ships only the analyzer and code fixer, no runtime code.
 
