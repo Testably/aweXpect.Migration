@@ -1,7 +1,12 @@
 <Project>
 	<PropertyGroup>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+		<CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
 	</PropertyGroup>
+	<ItemGroup>
+		<PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.14"/>
+		<PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.14"/>
+	</ItemGroup>
 	<ItemGroup>
 		<PackageVersion Include="aweXpect" Version="3.4.0"/>
 	</ItemGroup>
