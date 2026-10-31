@@ -6,7 +6,7 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Testably_aweXpect.Migration&metric=coverage)](https://sonarcloud.io/summary/overall?id=Testably_aweXpect.Migration)
 
 A Roslyn analyzer and code-fix provider that migrates [FluentAssertions](https://fluentassertions.com/)
-and [xUnit](https://xunit.net/) assertions to [aweXpect](https://github.com/aweXpect/aweXpect). Drop the
+and [xUnit](https://xunit.net/) assertions to [aweXpect](https://github.com/Testably/aweXpect). Drop the
 package into a project that uses one of those libraries and the analyzer flags each assertion; the
 accompanying code fix rewrites the call site to its aweXpect equivalent.
 
@@ -46,7 +46,7 @@ namespace (nested `.Should()` calls inside lambda arguments are intentionally sk
 `aweXpectM003` is raised on every method call on `Xunit.Assert`.
 
 The code fix is offered only where the fixer knows a rewrite. An assertion without one, for example a
-chained call it does not recognise, keeps its warning and has to be migrated by hand.
+chained call it does not recognize, keeps its warning and has to be migrated by hand.
 
 A typical migration looks like this:
 
