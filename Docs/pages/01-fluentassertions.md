@@ -331,13 +331,32 @@ a few rules:
   trusted, numbers of different types are not converted in equivalency, and an `AggregateException` is
   not unwrapped.
 
+Each example below runs the original assertion and its rewrite on the same input and shows the outcome
+of both.
+
 ### Equality
 
 #### NaN is an ordinary value
 
 `BeApproximately(double.NaN, tolerance)` throws in FluentAssertions and `NotBeApproximately` fails for a
 `NaN` subject. The rewrites pass: aweXpect compares `NaN` like `double.Equals` does, as a value that
-equals itself and nothing else. Add `IsNotNaN()` where a `NaN` subject has to fail:
+equals itself and nothing else.
+
+```csharp
+double subject = double.NaN;
+
+// FluentAssertions: throws an ArgumentException
+subject.Should().BeApproximately(double.NaN, 0.1);
+// aweXpect: passes
+await That(subject).IsEqualTo(double.NaN).Within(0.1);
+
+// FluentAssertions: fails
+subject.Should().NotBeApproximately(1.0, 0.1);
+// aweXpect: passes
+await That(subject).IsNotEqualTo(1.0).Within(0.1);
+```
+
+Add `IsNotNaN()` where a `NaN` subject has to fail:
 
 ```csharp
 await That(subject).IsNotNaN().And.IsNotEqualTo(expected).Within(tolerance);
@@ -349,12 +368,38 @@ The rewrite casts an unsigned `BeCloseTo` delta to the subject type. A delta tha
 `uint.MaxValue` for an `int`, becomes negative and throws an `ArgumentOutOfRangeException`, because a
 negative tolerance is a malformed expectation.
 
+```csharp
+int subject = 1;
+
+// FluentAssertions: passes
+subject.Should().BeCloseTo(1, uint.MaxValue);
+// aweXpect: throws an ArgumentOutOfRangeException, as (int)uint.MaxValue is -1
+await That(subject).IsEqualTo(1).Within((int)uint.MaxValue);
+```
+
 #### Numbers of different types
 
 `IsOneOf` on an `object` subject compares numbers by value, like `IsEqualTo`, so
 `That((object)1).IsOneOf(1L, 2L)` passes where `BeOneOf` fails. The rewrite of
 `NotContain(collection)` uses `IsOneOf` as well and therefore also rejects an item `1` for an unexpected
 `1L`. aweXpect applies one rule to all equality expectations on `object`.
+
+```csharp
+object subject = 1;
+
+// FluentAssertions: fails
+subject.Should().BeOneOf(1L, 2L);
+// aweXpect: passes
+await That(subject).IsOneOf(1L, 2L);
+
+object[] items = [1];
+object[] unexpected = [1L];
+
+// FluentAssertions: passes
+items.Should().NotContain(unexpected);
+// aweXpect: fails
+await That(items).None().ComplyWith(x => x.IsOneOf(unexpected));
+```
 
 ### Null and emptiness
 
@@ -363,8 +408,28 @@ negative tolerance is a malformed expectation.
 `NotBeEmpty()` and `NotContain("x")` pass in FluentAssertions for a `null` string, and `NotHaveValue(2)`
 passes for a `null` enum. The same holds for `Contain("x", AtMost.Once())`, `Contain("x", LessThan.Twice())`
 and any other occurrence constraint that allows zero occurrences. Their rewrites fail, because an
-expectation that inspects the content has nothing to inspect in `null`. Allow `null` explicitly where it
-is acceptable:
+expectation that inspects the content has nothing to inspect in `null`.
+
+```csharp
+string? subject = null;
+
+// FluentAssertions: passes
+subject.Should().NotBeEmpty();
+// aweXpect: fails
+await That(subject).IsNotEmpty();
+
+// FluentAssertions: passes
+subject.Should().NotContain("x");
+// aweXpect: fails
+await That(subject).DoesNotContain("x");
+
+// FluentAssertions: passes
+subject.Should().Contain("x", AtMost.Once());
+// aweXpect: fails
+await That(subject).Contains("x").AtMost().Once();
+```
+
+Allow `null` explicitly where it is acceptable:
 
 ```csharp
 await That(subject).IsNull().Or.IsNotEmpty();
@@ -378,7 +443,18 @@ await That(subject).IsNull().Or.Contains("x").AtMost().Once();
 FluentAssertions checks the type that a `System.Type` subject describes, so
 `typeof(string).Should().BeAssignableTo<IComparable>()` passes. aweXpect has no expectations on a
 `Type` subject: `Is<IComparable>()` would check the `Type` object itself and silently invert
-`NotBeAssignableTo`. No code fix is offered; migrate such assertions by hand:
+`NotBeAssignableTo`.
+
+```csharp
+Type subject = typeof(string);
+
+// FluentAssertions: passes, as string implements IComparable
+subject.Should().BeAssignableTo<IComparable>();
+// aweXpect: fails, as the Type object itself does not implement IComparable
+await That(subject).Is<IComparable>();
+```
+
+No code fix is offered; migrate such assertions by hand:
 
 ```csharp
 await That(typeof(IComparable).IsAssignableFrom(subject)).IsTrue();
@@ -392,6 +468,15 @@ await That(typeof(IComparable).IsAssignableFrom(subject)).IsTrue();
 value. `IsNotBetween(3).And(1)` and `IsBetween(3).And(1)` throw an `ArgumentOutOfRangeException`, because a
 range whose maximum is below its minimum is a malformed expectation. Swap the bounds.
 
+```csharp
+int subject = 2;
+
+// FluentAssertions: passes
+subject.Should().NotBeInRange(3, 1);
+// aweXpect: throws an ArgumentOutOfRangeException
+await That(subject).IsNotBetween(3).And(1);
+```
+
 ### Containment
 
 #### Empty expectations throw
@@ -401,11 +486,29 @@ empty collection pass in FluentAssertions for every subject. The rewrites throw 
 because an expectation that cannot fail checks nothing. Remove the assertion or expect something
 concrete.
 
+```csharp
+string subject = "abc";
+
+// FluentAssertions: passes
+subject.Should().StartWith("");
+// aweXpect: throws an ArgumentException
+await That(subject).StartsWith("");
+```
+
 #### Empty wildcard patterns
 
 `Match("")` on a string throws an `ArgumentException` in FluentAssertions. The rewrite
 `IsEqualTo("").AsWildcard()` does not throw: an empty pattern matches only the empty string, so it passes
 for `""` and fails for any other subject.
+
+```csharp
+string subject = "";
+
+// FluentAssertions: throws an ArgumentException
+subject.Should().Match("");
+// aweXpect: passes
+await That(subject).IsEqualTo("").AsWildcard();
+```
 
 #### Occurrences are counted without overlap
 
@@ -413,13 +516,33 @@ for `""` and fails for any other subject.
 and a loop over `IndexOf` do, so `"aaaa"` contains `"aa"` exactly twice. FluentAssertions counts every
 position at which the substring starts, which is three times.
 
+```csharp
+string subject = "aaaa";
+
+// FluentAssertions: fails, as it counts "aa" three times
+subject.Should().Contain("aa", Exactly.Twice());
+// aweXpect: passes
+await That(subject).Contains("aa").Twice();
+```
+
 ### Collections
 
 #### Type instances as items
 
 `AllBeAssignableTo<T>()` and `AllBeOfType<T>()` also accept `Type` instances that describe a matching
 type. `All().Are<T>()` and `All().AreExactly<T>()` check the runtime type of each item, and the runtime
-type of a `Type` object is `RuntimeType`. Check the described types explicitly:
+type of a `Type` object is `RuntimeType`.
+
+```csharp
+Type[] subject = [typeof(ArgumentException)];
+
+// FluentAssertions: passes
+subject.Should().AllBeAssignableTo<Exception>();
+// aweXpect: fails, as the item is a Type and not an Exception
+await That(subject).All().Are<Exception>();
+```
+
+Check the described types explicitly:
 
 ```csharp
 await That(types).All().Satisfy(type => typeof(Exception).IsAssignableFrom(type));
@@ -433,9 +556,30 @@ The following differences remain:
 - **The runtime type of the expectation drives the comparison.** aweXpect compares all public members of
   the expectation's runtime type; FluentAssertions only those of its declared type. Ignore a member that
   should not count with `o => o.IgnoringMember("Name")`.
+  ```csharp
+  // class Dog : Animal { public string Breed { get; set; } }
+  Animal subject = new Dog { Name = "Rex", Breed = "Poodle" };
+  Animal expected = new Dog { Name = "Rex", Breed = "Beagle" };
+
+  // FluentAssertions: passes, as Animal has no Breed
+  subject.Should().BeEquivalentTo(expected);
+  // aweXpect: fails, as Dog has a different Breed
+  await That(subject).IsEquivalentTo(expected, o => o.IgnoringCollectionOrder());
+  ```
 - **`Equals` overrides are ignored while comparing by members.** FluentAssertions compares a class that
   overrides `Equals` with `Equals`; aweXpect compares its members, so an `Equals` that ignores a member no
-  longer hides a difference in it. Ask for the type's own equality explicitly:
+  longer hides a difference in it.
+  ```csharp
+  // Money.Equals compares only the Amount
+  Money subject = new Money { Amount = 10, Note = "rent" };
+  Money expected = new Money { Amount = 10, Note = "food" };
+
+  // FluentAssertions: passes
+  subject.Should().BeEquivalentTo(expected);
+  // aweXpect: fails, as the Note differs
+  await That(subject).IsEquivalentTo(expected, o => o.IgnoringCollectionOrder());
+  ```
+  Ask for the type's own equality explicitly:
   ```csharp
   await That(subject).IsEquivalentTo(expected, o => o
       .IgnoringCollectionOrder()
@@ -443,6 +587,15 @@ The following differences remain:
   ```
 - **Numbers of different types are not converted.** A member of type `int` is not equivalent to a member of
   type `long` with the same value. Use the same type in the expectation, e.g. `30` instead of `30L`.
+  ```csharp
+  // class Person { public int Age { get; set; } }
+  Person subject = new Person { Age = 30 };
+
+  // FluentAssertions: passes
+  subject.Should().BeEquivalentTo(new { Age = 30L });
+  // aweXpect: fails, as Age is an int and 30L is a long
+  await That(subject).IsEquivalentTo(new { Age = 30L }, o => o.IgnoringCollectionOrder());
+  ```
 
 ### Exceptions
 
@@ -451,7 +604,18 @@ The following differences remain:
 FluentAssertions looks through an `AggregateException`, so `Throw<ArgumentException>()` passes for an
 aggregate that wraps an `ArgumentException`, and `NotThrow<ArgumentException>()` fails for it. aweXpect
 compares the exception the delegate actually threw, so `Throws<ArgumentException>()` fails and
-`DoesNotThrow<ArgumentException>()` passes. Expect the aggregate and its inner exception explicitly:
+`DoesNotThrow<ArgumentException>()` passes.
+
+```csharp
+Action callback = () => throw new AggregateException(new ArgumentException());
+
+// FluentAssertions: passes
+callback.Should().Throw<ArgumentException>();
+// aweXpect: fails, as the delegate threw an AggregateException
+await That(callback).Throws<ArgumentException>();
+```
+
+Expect the aggregate and its inner exception explicitly:
 
 ```csharp
 await That(callback).Throws<AggregateException>().WithInner<ArgumentException>();
@@ -466,7 +630,24 @@ the same ticks; FluentAssertions ignores the kind. aweXpect does not guess which
 ordering expectations (`IsAfter`, `IsBefore` and their variants) fail for such a pair in both polarities,
 `IsEqualTo(...).Within(...)` fails and its negation passes, `IsOneOf` ignores a value of the other kind, and
 `IsInAscendingOrder` fails for a collection that mixes both kinds. `DateTimeKind.Unspecified` is compatible
-with both. Convert the values before comparing them:
+with both.
+
+```csharp
+DateTime subject = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+DateTime expected = new DateTime(2026, 1, 1, 11, 0, 0, DateTimeKind.Local);
+
+// FluentAssertions: passes, as it compares only 12:00 with 11:00
+subject.Should().BeAfter(expected);
+// aweXpect: fails
+await That(subject).IsAfter(expected);
+
+// FluentAssertions: fails
+subject.Should().NotBeAfter(expected);
+// aweXpect: fails as well
+await That(subject).IsNotAfter(expected);
+```
+
+Convert the values before comparing them:
 
 ```csharp
 await That(subject.ToUniversalTime()).IsAfter(expected.ToUniversalTime());
