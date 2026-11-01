@@ -8,7 +8,7 @@ import PackageInstall from '@site/src/components/PackageInstall';
 
 `aweXpect.Migration` is a Roslyn analyzer that migrates assertions from [FluentAssertions](https://fluentassertions.com/) and [xUnit](https://xunit.net/) to [aweXpect](/aweXpect). It reports each assertion of these libraries, and its code fix rewrites the call site to the aweXpect equivalent where it knows one.
 
-Upgrading from an older aweXpect version instead? See the upgrade guides [from aweXpect 2.x](./03-from-awexpect-2.md) and [from aweXpect 3.x](./04-from-awexpect-3.md).
+Upgrading from an older aweXpect version instead? See the upgrade guides [from aweXpect 2.x](/aweXpect/changelog/migration-to-v3) and [from aweXpect 3.x](/aweXpect/changelog/migration-to-v4).
 
 ## Installation
 
