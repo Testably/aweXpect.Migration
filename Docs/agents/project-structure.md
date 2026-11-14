@@ -7,7 +7,7 @@
 | `Source/aweXpect.Migration.Analyzers`             | Diagnostic descriptors (`Rules.cs`), resources, one analyzer per source library. `netstandard2.0`, not packable on its own.                    |
 | `Source/aweXpect.Migration.Analyzers.CodeFixers`  | Code fix providers, one per source library, on top of `AssertionCodeFixProvider`. `netstandard2.0`, not packable on its own.                   |
 | `Source/aweXpect.Migration`                       | Packaging project without code: references both projects as analyzers and packs their DLLs into `analyzers/dotnet/cs`.                         |
-| `Tests/aweXpect.Migration.Tests`                  | Analyzer and code fix tests, grouped in `FluentAssertions/` and `Xunit/`; Roslyn test verifiers in `Verifiers/`.                               |
+| `Tests/aweXpect.Migration.Tests`                  | Analyzer and code fix tests, grouped in `FluentAssertions/` and `Xunit/`; Roslyn test verifiers in `Verifiers/`; the compile check of the code blocks in `Docs/pages` in `Docs/`. |
 | `Tests/aweXpect.Migration.Example.Tests`          | Consumer-style playground that loads the analyzers into a real project. Not run by the pipeline.                                               |
 | `Pipeline/`                                       | Fallout build project (see [workflows.md](workflows.md)).                                                                                      |
 | `Docs/pages/`                                     | Published user docs: the rewrite tables per source library.                                                                                    |

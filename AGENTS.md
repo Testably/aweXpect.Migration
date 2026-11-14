@@ -21,6 +21,7 @@ Correctness is a must. The other goals are strong defaults and win in this order
 - Analyzer release tracking: `Microsoft.CodeAnalysis.Analyzers` picks up `AnalyzerReleases.Shipped.md` and `AnalyzerReleases.Unshipped.md`. Descriptors are created through a helper, so the build does not flag missing entries (RS2000); add new or changed rules to `AnalyzerReleases.Unshipped.md` by hand.
 - A code fix must be faithful: when a rewrite would drop an argument or change semantics silently, return the unchanged document so no fix is offered. Documented behavioral differences are fine.
 - Every supported rewrite has a row in `Docs/pages/01-fluentassertions.md` or `Docs/pages/02-xunit.md`, plus an entry under "Behavioral differences" when the result behaves differently. These pages are published to the docs site.
+- Every `csharp` block in `Docs/pages` must compile (or be marked `csharp no-compile`). `DocsPagesTests` in `aweXpect.Migration.Tests` compiles them against aweXpect, FluentAssertions and xUnit.
 
 ## Validation
 

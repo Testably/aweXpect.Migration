@@ -52,6 +52,10 @@ does not recognize, keeps its warning and has to be migrated by hand.
 A typical migration looks like this:
 
 ```csharp
+bool subject = // ...
+string expected = // ...
+string actual = // ...
+
 // Before
 subject.Should().BeTrue();
 Assert.Equal(expected, actual);
