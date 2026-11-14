@@ -9,6 +9,10 @@ The fixer rewrites each `Xunit.Assert.*` call into the corresponding
 (`Assert.Equal(expected, actual)`) is swapped to match the "actual first" convention of aweXpect.
 
 ```csharp
+string expected = // ...
+string actual = // ...
+Action callback = // ...
+
 // Before (xUnit)
 Assert.Equal(expected, actual);
 Assert.Throws<ArgumentException>(callback);
@@ -117,6 +121,11 @@ collection enumerates them, also for a `HashSet<T>`. Use equivalency for nested 
 `InAnyOrder()` for sets:
 
 ```csharp
+int[][] actual = // ...
+int[][] expected = // ...
+HashSet<int> actualSet = // ...
+HashSet<int> expectedSet = // ...
+
 await That(actual).IsEquivalentTo(expected);
 await That(actualSet).IsEqualTo(expectedSet).InAnyOrder();
 ```
@@ -145,5 +154,7 @@ nothing.
 type to inspect. Allow `null` explicitly where it is acceptable:
 
 ```csharp
+string? actual = // ...
+
 await That(actual).IsNull().Or.DoesNotContain("x");
 ```

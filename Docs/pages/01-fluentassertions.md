@@ -9,6 +9,8 @@ The fixer rewrites the entire `.Should()` chain in one step: the `Should()` call
 `because` argument is moved into a `.Because(...)` suffix. `.And` chains are preserved.
 
 ```csharp
+int[] subject = // ...
+
 // Before (FluentAssertions)
 subject.Should().Contain(1).And.Contain(2, "because foo");
 
@@ -245,6 +247,8 @@ For elements that are compared by value (see [Equivalency](#equivalency)) or wit
 | `.WithParameterName(name)`                                       | `.WithParamName(name)`                                       |                                                   |
 
 ```csharp
+Action callback = // ...
+
 // Before
 callback.Should().Throw<ArgumentException>().WithMessage("foo*");
 
@@ -291,7 +295,7 @@ When the entire `.Should()` chain is the body of a lambda (so it is not awaited 
 surrounding signature is `Action` or `Func<T>`), the fixer wraps the rewritten expression in
 `aweXpect.Synchronous.Synchronously.Verify(...)` to keep the lambda synchronous:
 
-```csharp
+```csharp no-compile
 // Before
 Action action = () => true.Should().BeTrue();
 
@@ -305,6 +309,10 @@ A trailing `because` argument on any of the assertions above is preserved as a `
 including formatted overloads:
 
 ```csharp
+int subject = // ...
+int expected = // ...
+int value = // ...
+
 // Before
 subject.Should().Be(expected, "because the value is {0}", value);
 
@@ -359,6 +367,10 @@ await That(subject).IsNotEqualTo(1.0).Within(0.1);
 Add `IsNotNaN()` where a `NaN` subject has to fail:
 
 ```csharp
+double subject = // ...
+double expected = // ...
+double tolerance = // ...
+
 await That(subject).IsNotNaN().And.IsNotEqualTo(expected).Within(tolerance);
 ```
 
@@ -370,11 +382,12 @@ negative tolerance is a malformed expectation.
 
 ```csharp
 int subject = 1;
+uint delta = uint.MaxValue;
 
 // FluentAssertions: passes
-subject.Should().BeCloseTo(1, uint.MaxValue);
+subject.Should().BeCloseTo(1, delta);
 // aweXpect: throws an ArgumentOutOfRangeException, as (int)uint.MaxValue is -1
-await That(subject).IsEqualTo(1).Within((int)uint.MaxValue);
+await That(subject).IsEqualTo(1).Within((int)delta);
 ```
 
 #### Numbers of different types
@@ -432,6 +445,8 @@ await That(subject).Contains("x").AtMost().Once();
 Allow `null` explicitly where it is acceptable:
 
 ```csharp
+string? subject = // ...
+
 await That(subject).IsNull().Or.IsNotEmpty();
 await That(subject).IsNull().Or.Contains("x").AtMost().Once();
 ```
@@ -457,6 +472,8 @@ await That(subject).Is<IComparable>();
 No code fix is offered; migrate such assertions by hand:
 
 ```csharp
+Type subject = // ...
+
 await That(typeof(IComparable).IsAssignableFrom(subject)).IsTrue();
 ```
 
@@ -559,6 +576,8 @@ await That(subject).All().Are<Exception>();
 Check the described types explicitly:
 
 ```csharp
+Type[] subject = // ...
+
 await That(subject).All().Satisfy(type => typeof(Exception).IsAssignableFrom(type));
 ```
 
@@ -571,7 +590,11 @@ The following differences remain:
   the expectation's runtime type; FluentAssertions only those of its declared type. Ignore a member that
   should not count with `o => o.IgnoringMember("Name")`.
   ```csharp
-  // class Dog : Animal { public string Breed { get; set; } }
+  using aweXpect.Equivalency;
+
+  class Animal { public string Name { get; set; } = ""; }
+  class Dog : Animal { public string Breed { get; set; } = ""; }
+
   Animal subject = new Dog { Name = "Rex", Breed = "Poodle" };
   Animal expected = new Dog { Name = "Rex", Breed = "Beagle" };
 
@@ -585,6 +608,14 @@ The following differences remain:
   longer hides a difference in it.
   ```csharp
   // Money.Equals compares only the Amount
+  class Money
+  {
+      public decimal Amount { get; set; }
+      public string Note { get; set; } = "";
+      public override bool Equals(object? obj) => obj is Money other && other.Amount == Amount;
+      public override int GetHashCode() => Amount.GetHashCode();
+  }
+
   Money subject = new Money { Amount = 10, Note = "rent" };
   Money expected = new Money { Amount = 10, Note = "food" };
 
@@ -595,6 +626,9 @@ The following differences remain:
   ```
   Ask for the type's own equality explicitly:
   ```csharp
+  Money subject = // ...
+  Money expected = // ...
+
   await That(subject).IsEquivalentTo(expected, o => o
       .IgnoringCollectionOrder()
       .For<Money>(x => x with { ComparisonType = EquivalencyComparisonType.ByValue }));
@@ -602,7 +636,8 @@ The following differences remain:
 - **Numbers of different types are not converted.** A member of type `int` is not equivalent to a member of
   type `long` with the same value. Use the same type in the expectation, e.g. `30` instead of `30L`.
   ```csharp
-  // class Person { public int Age { get; set; } }
+  class Person { public int Age { get; set; } }
+
   Person subject = new Person { Age = 30 };
 
   // FluentAssertions: passes
@@ -614,8 +649,10 @@ The following differences remain:
   also across enum types; aweXpect compares them with `Equals`, which requires the same type. Compare such
   a pair of types with a predicate.
   ```csharp
-  // class Album { public Genre Genre { get; set; } }
-  // enum Genre { Pop, Rock } and enum GenreDto { Pop, Rock }
+  enum Genre { Pop, Rock }
+  enum GenreDto { Pop, Rock }
+  class Album { public Genre Genre { get; set; } }
+
   Album subject = new Album { Genre = Genre.Rock };
 
   // FluentAssertions: passes
@@ -624,6 +661,8 @@ The following differences remain:
   await That(subject).IsEquivalentTo(new { Genre = GenreDto.Rock }, o => o.IgnoringCollectionOrder());
   ```
   ```csharp
+  Album subject = // ...
+
   await That(subject).IsEquivalentTo(new { Genre = GenreDto.Rock }, o => o
       .IgnoringCollectionOrder()
       .Comparing<Genre, GenreDto>((genre, dto) => (int)genre == (int)dto));
@@ -655,6 +694,8 @@ await That(callback).Throws<ArgumentException>();
 Expect the aggregate and its inner exception explicitly:
 
 ```csharp
+Action callback = // ...
+
 await That(callback).Throws<AggregateException>().WithInner<ArgumentException>();
 ```
 
@@ -694,5 +735,8 @@ await That(subject).IsEqualTo(local);
 Convert the values before comparing them:
 
 ```csharp
+DateTime subject = // ...
+DateTime expected = // ...
+
 await That(subject.ToUniversalTime()).IsAfter(expected.ToUniversalTime());
 ```
