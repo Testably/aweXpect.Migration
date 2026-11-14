@@ -243,6 +243,8 @@ For elements that are compared by value (see [Equivalency](#equivalency)) or wit
 | `callback.Should().NotThrow<T>()` / `NotThrowAsync<T>()`         | `Expect.That(callback).DoesNotThrow<T>()`                    | [aggregate](#aggregateexception-is-not-unwrapped) |
 | `callback.Should().Throw<T>()` / `ThrowAsync<T>()`               | `Expect.That(callback).Throws<T>()`                          | [aggregate](#aggregateexception-is-not-unwrapped) |
 | `callback.Should().ThrowExactly<T>()` / `ThrowExactlyAsync<T>()` | `Expect.That(callback).ThrowsExactly<T>()`                   |                                                   |
+| `callback.Should().ThrowWithinAsync<T>(timeout)`                 | `Expect.That(callback).Throws<T>().Within(timeout)`          | [aggregate](#aggregateexception-is-not-unwrapped) |
+| `callback.Should().CompleteWithinAsync(timeout)`                 | `Expect.That(callback).ExecutesIn().AtMost(timeout)`         | [canceled](#canceled-tasks-do-not-complete)       |
 | `.WithMessage(pattern)`                                          | `.WithMessage(pattern).AsWildcard().IgnoringCase().IgnoringNewlineStyle()` | [pattern](#empty-wildcard-patterns) |
 | `.WithInnerException<T>()` / `(typeof(T))`                       | `.WithInner<T>()` / `.WithInner(typeof(T))`                  |                                                   |
 | `.WithParameterName(name)`                                       | `.WithParamName(name)`                                       |                                                   |
@@ -698,6 +700,19 @@ Expect the aggregate and its inner exception explicitly:
 Action callback = // ...
 
 await That(callback).Throws<AggregateException>().WithInner<ArgumentException>();
+```
+
+#### Canceled tasks do not complete
+
+FluentAssertions treats a canceled task as completed, so `CompleteWithinAsync(timeout)` passes for it. aweXpect fails `ExecutesIn().AtMost(timeout)` for a cancellation, because it aborts the execution instead of timing it.
+
+```csharp
+Func<Task> callback = () => Task.FromCanceled(new CancellationToken(true));
+
+// FluentAssertions: passes
+await callback.Should().CompleteWithinAsync(TimeSpan.FromSeconds(1));
+// aweXpect: fails, as the task was canceled
+await That(callback).ExecutesIn().AtMost(TimeSpan.FromSeconds(1));
 ```
 
 ### Dates and times

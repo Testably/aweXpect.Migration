@@ -1078,6 +1078,11 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 					$".ThrowsExactly<{genericArgs}>()", 0)
 				: await ParseExpressionWithBecause(
 					$".ThrowsExactly({expected})", 1),
+			"ThrowWithinAsync" when isGeneric => await ParseExpressionWithBecause(
+				$".Throws<{genericArgs}>().Within({expected})", 1),
+			"CompleteWithinAsync" when methodSymbol?.ContainingType.Name is "NonGenericAsyncFunctionAssertions"
+				or "GenericAsyncFunctionAssertions" => await ParseExpressionWithBecause(
+				$".ExecutesIn().AtMost({expected})", 1),
 			_ => null
 		};
 	}

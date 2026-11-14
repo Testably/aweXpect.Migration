@@ -383,6 +383,22 @@ public static class TestCases
 		theoryData.AddWithBecause("Action callback = () => {};",
 			"callback.Should().Throw<ArgumentException>().WithParameterName(\"foo\", {0})",
 			"Expect.That(callback).Throws<ArgumentException>().WithParamName(\"foo\")");
+		theoryData.AddWithBecause("Func<Task> callback = () => Task.CompletedTask;",
+			"callback.Should().ThrowWithinAsync<ArgumentException>(TimeSpan.FromSeconds(3), {0})",
+			"Expect.That(callback).Throws<ArgumentException>().Within(TimeSpan.FromSeconds(3))",
+			true);
+		theoryData.AddWithBecause("Func<Task> callback = () => Task.CompletedTask;",
+			"callback.Should().ThrowWithinAsync<ArgumentException>(TimeSpan.FromSeconds(3)).WithMessage(\"foo\", {0})",
+			"Expect.That(callback).Throws<ArgumentException>().Within(TimeSpan.FromSeconds(3)).WithMessage(\"foo\").AsWildcard().IgnoringCase().IgnoringNewlineStyle()",
+			true);
+		theoryData.AddWithBecause("Func<Task> callback = () => Task.CompletedTask;",
+			"callback.Should().CompleteWithinAsync(TimeSpan.FromSeconds(3), {0})",
+			"Expect.That(callback).ExecutesIn().AtMost(TimeSpan.FromSeconds(3))",
+			true);
+		theoryData.AddWithBecause("Func<Task<int>> callback = () => Task.FromResult(1);",
+			"callback.Should().CompleteWithinAsync(TimeSpan.FromSeconds(3), {0})",
+			"Expect.That(callback).ExecutesIn().AtMost(TimeSpan.FromSeconds(3))",
+			true);
 		return theoryData;
 	}
 
@@ -398,6 +414,8 @@ public static class TestCases
 			"callback.Should().Throw<ArgumentException>().WithInnerException<ArgumentException>().WithMessage(\"foo\")"));
 		theoryData.Add(("Action callback = () => {};",
 			"callback.Should().Throw<ArgumentException>().WithInnerExceptionExactly<ArgumentException>()"));
+		theoryData.Add(("TaskCompletionSource subject = new();",
+			"subject.Should().CompleteWithinAsync(TimeSpan.FromSeconds(3))"));
 		theoryData.Add(("string[] subject = [];",
 			"subject.Should().BeEquivalentTo(\"a\", \"b\")"));
 		theoryData.Add(("Type subject = typeof(string);",
