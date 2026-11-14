@@ -147,7 +147,7 @@ public static class TestCases
 			"Expect.That(subject).Contains([1, 2, 3])");
 		theoryData.AddWithBecause("int[] subject = [1, 2,];int[] expected = [1, 2,];",
 			"subject.Should().Contain(expected, {0})",
-			"Expect.That(subject).Contains(expected).InAnyOrder().IgnoringInterspersedItems().IgnoringDuplicates()");
+			"Expect.That(subject).Contains(expected).InAnyOrder().IgnoringDuplicates()");
 		theoryData.AddWithBecause("List<int[]> subject = [];int[] expected = [1, 2,];",
 			"subject.Should().Contain(expected, {0})",
 			"Expect.That(subject).Contains(expected)");
