@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -103,6 +104,31 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		return delta.Expression is IdentifierNameSyntax or LiteralExpressionSyntax or MemberAccessExpressionSyntax
 			? $"({type}){delta.Expression}"
 			: $"({type})({delta.Expression})";
+	}
+
+	/// <summary>
+	///     A constant delta outside the range of the subject type cannot be cast to it (CS0221), and an unchecked cast
+	///     would turn it into a negative tolerance. Unsigned subjects take a delta of their own type, which always fits.
+	/// </summary>
+	private static bool IsDeltaConstantOutOfRange(SemanticModel? semanticModel, IMethodSymbol? methodSymbol,
+		MethodDefinition mainMethod)
+	{
+		ArgumentSyntax? delta = mainMethod.Arguments.ElementAtOrDefault(1);
+		if (delta is null || semanticModel is null || methodSymbol is not { Parameters.Length: > 1, } ||
+		    semanticModel.GetConstantValue(delta.Expression) is not { HasValue: true, Value: not null, } constant)
+		{
+			return false;
+		}
+
+		decimal value = constant.Value is char c ? c : Convert.ToDecimal(constant.Value, CultureInfo.InvariantCulture);
+		return methodSymbol.Parameters[0].Type.SpecialType switch
+		{
+			SpecialType.System_SByte => value > sbyte.MaxValue,
+			SpecialType.System_Int16 => value > short.MaxValue,
+			SpecialType.System_Int32 => value > int.MaxValue,
+			SpecialType.System_Int64 => value > long.MaxValue,
+			_ => false,
+		};
 	}
 
 	private static async Task<string?> BeEquivalentTo(CodeFixContext context,
@@ -827,6 +853,12 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		    methodSymbol?.ContainingType.Name == "TypeAssertions")
 		{
 			// aweXpect has no expectations on a Type subject, so Is<T>() would check the Type object itself.
+			return null;
+		}
+
+		if (methodName is "BeCloseTo" or "NotBeCloseTo" &&
+		    IsDeltaConstantOutOfRange(semanticModel, methodSymbol, mainMethod))
+		{
 			return null;
 		}
 

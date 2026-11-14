@@ -410,6 +410,26 @@ public static class TestCases
 			"subject.Should().BeEquivalentTo(expected, o => o.WithStrictOrdering().Excluding(e => e.Message))"));
 		theoryData.Add(("object[] subject = [];object expected = new();",
 			"subject.Should().ContainEquivalentOf(expected, o => o.Excluding(e => e.GetType()))"));
+		theoryData.Add(("int subject = 1;",
+			"subject.Should().BeCloseTo(1, uint.MaxValue)"));
+		theoryData.Add(("int subject = 1;",
+			"subject.Should().BeCloseTo(1, uint.MaxValue, \"because {0}\", 1)"));
+		theoryData.Add(("int subject = 1;",
+			"subject.Should().NotBeCloseTo(1, uint.MaxValue)"));
+		theoryData.Add(("int subject = 1;const uint delta = uint.MaxValue - 1;",
+			"subject.Should().BeCloseTo(1, delta)"));
+		theoryData.Add(("int subject = 1;",
+			"subject.Should().BeCloseTo(1, (uint)int.MaxValue + 1)"));
+		theoryData.Add(("long subject = 1;",
+			"subject.Should().BeCloseTo(1, ulong.MaxValue)"));
+		theoryData.Add(("long subject = 1;",
+			"subject.Should().NotBeCloseTo(1, ulong.MaxValue)"));
+		theoryData.Add(("short subject = 1;",
+			"subject.Should().BeCloseTo(1, ushort.MaxValue)"));
+		theoryData.Add(("short subject = 1;",
+			"subject.Should().BeCloseTo(1, '\\uffff')"));
+		theoryData.Add(("sbyte subject = 1;",
+			"subject.Should().BeCloseTo(1, byte.MaxValue)"));
 		return theoryData;
 	}
 
@@ -461,6 +481,21 @@ public static class TestCases
 		theoryData.AddWithBecause("int subject = 1;int expected = 2;uint delta = 3;",
 			"subject.Should().NotBeCloseTo(expected, delta + 1, {0})",
 			"Expect.That(subject).IsNotEqualTo(expected).Within((int)(delta + 1))");
+		theoryData.AddWithBecause("int subject = 1;int expected = 2;",
+			"subject.Should().BeCloseTo(expected, 5u, {0})",
+			"Expect.That(subject).IsEqualTo(expected).Within((int)5u)");
+		theoryData.AddWithBecause("int subject = 1;int expected = 2;",
+			"subject.Should().NotBeCloseTo(expected, (uint)int.MaxValue, {0})",
+			"Expect.That(subject).IsNotEqualTo(expected).Within((int)((uint)int.MaxValue))");
+		theoryData.AddWithBecause("int subject = 1;int expected = 2;uint delta = uint.MaxValue;",
+			"subject.Should().BeCloseTo(expected, delta, {0})",
+			"Expect.That(subject).IsEqualTo(expected).Within((int)delta)");
+		theoryData.AddWithBecause("long subject = 1;long expected = 2;",
+			"subject.Should().BeCloseTo(expected, uint.MaxValue, {0})",
+			"Expect.That(subject).IsEqualTo(expected).Within(uint.MaxValue)");
+		theoryData.AddWithBecause("short subject = 1;short expected = 2;",
+			"subject.Should().BeCloseTo(expected, (ushort)short.MaxValue, {0})",
+			"Expect.That(subject).IsEqualTo(expected).Within((short)((ushort)short.MaxValue))");
 		theoryData.AddWithBecause("long subject = 1;long expected = 2;",
 			"subject.Should().BeCloseTo(expected, 3, {0})",
 			"Expect.That(subject).IsEqualTo(expected).Within(3)");
