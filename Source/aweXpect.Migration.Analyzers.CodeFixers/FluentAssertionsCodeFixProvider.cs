@@ -466,7 +466,7 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		ISymbol? symbol = semanticModel?.GetSymbolInfo(mainMethod.Method).Symbol;
 		if (symbol is IMethodSymbol methodSymbol && HasCollectionParameter(methodSymbol))
 		{
-			expressionSuffix = ".InAnyOrder().IgnoringInterspersedItems().IgnoringDuplicates()";
+			expressionSuffix = ".InAnyOrder().IgnoringDuplicates()";
 		}
 		else if (mainMethod.Arguments.Count > 1)
 		{
