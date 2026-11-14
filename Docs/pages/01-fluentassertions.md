@@ -45,7 +45,8 @@ A note in the last column marks a rewrite that behaves differently in some cases
 
 For an integral subject, FluentAssertions takes the delta of `BeCloseTo` as the unsigned counterpart of the
 subject type (`uint` for `int`). When the delta does not convert implicitly, the fixer casts it to the
-subject type, e.g. `Within((int)delta)`.
+subject type, e.g. `Within((int)delta)`. A constant delta that does not fit the subject type, such as
+`uint.MaxValue` for an `int`, is left for manual migration.
 
 ### Equivalency
 
@@ -376,8 +377,8 @@ await That(subject).IsNotNaN().And.IsNotEqualTo(expected).Within(tolerance);
 
 #### Integral tolerances
 
-The rewrite casts an unsigned `BeCloseTo` delta to the subject type. A delta that does not fit, such as
-`uint.MaxValue` for an `int`, becomes negative and throws an `ArgumentOutOfRangeException`, because a
+The rewrite casts an unsigned `BeCloseTo` delta to the subject type. A variable delta that does not fit, such
+as `uint.MaxValue` for an `int`, becomes negative and throws an `ArgumentOutOfRangeException`, because a
 negative tolerance is a malformed expectation.
 
 ```csharp
@@ -386,7 +387,7 @@ uint delta = uint.MaxValue;
 
 // FluentAssertions: passes
 subject.Should().BeCloseTo(1, delta);
-// aweXpect: throws an ArgumentOutOfRangeException, as (int)uint.MaxValue is -1
+// aweXpect: throws an ArgumentOutOfRangeException, as (int)delta is -1
 await That(subject).IsEqualTo(1).Within((int)delta);
 ```
 
