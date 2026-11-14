@@ -29,14 +29,14 @@ A note in the last column marks a rewrite that behaves differently in some cases
 
 | FluentAssertions construct                                  | Rewritten to                                                    | Note                                          |
 |-------------------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------|
-| `subject.Should().Be(expected)`                             | `Expect.That(subject).IsEqualTo(expected)`                      |                                               |
-| `subject.Should().NotBe(unexpected)`                        | `Expect.That(subject).IsNotEqualTo(unexpected)`                 |                                               |
+| `subject.Should().Be(expected)`                             | `Expect.That(subject).IsEqualTo(expected)`                      | [kind](#datetime-kinds)                       |
+| `subject.Should().NotBe(unexpected)`                        | `Expect.That(subject).IsNotEqualTo(unexpected)`                 | [kind](#datetime-kinds)                       |
 | `subject.Should().BeApproximately(expected, tolerance)`     | `Expect.That(subject).IsEqualTo(expected).Within(tolerance)`    | [NaN](#nan-is-an-ordinary-value)              |
 | `subject.Should().NotBeApproximately(expected, tolerance)`  | `Expect.That(subject).IsNotEqualTo(expected).Within(tolerance)` | [NaN](#nan-is-an-ordinary-value)              |
-| `subject.Should().BeCloseTo(expected, delta)`               | `Expect.That(subject).IsEqualTo(expected).Within(delta)`        | [delta](#integral-tolerances)                 |
-| `subject.Should().NotBeCloseTo(expected, delta)`            | `Expect.That(subject).IsNotEqualTo(expected).Within(delta)`     | [delta](#integral-tolerances)                 |
-| `subject.Should().BeOneOf(a, b, c)`                         | `Expect.That(subject).IsOneOf(a, b, c)`                         | [numbers](#numbers-of-different-types)        |
-| `subject.Should().BeOneOf(collection)`                      | `Expect.That(subject).IsOneOf(collection)`                      | [numbers](#numbers-of-different-types)        |
+| `subject.Should().BeCloseTo(expected, delta)`               | `Expect.That(subject).IsEqualTo(expected).Within(delta)`        | [delta](#integral-tolerances), [kind](#datetime-kinds) |
+| `subject.Should().NotBeCloseTo(expected, delta)`            | `Expect.That(subject).IsNotEqualTo(expected).Within(delta)`     | [delta](#integral-tolerances), [kind](#datetime-kinds) |
+| `subject.Should().BeOneOf(a, b, c)`                         | `Expect.That(subject).IsOneOf(a, b, c)`                         | [numbers](#numbers-of-different-types), [kind](#datetime-kinds) |
+| `subject.Should().BeOneOf(collection)`                      | `Expect.That(subject).IsOneOf(collection)`                      | [numbers](#numbers-of-different-types), [empty](#empty-expectations-throw), [kind](#datetime-kinds) |
 | `subject.Should().BeOneOf(value, collection)`               | `Expect.That(subject).IsOneOf(value)`                           |                                               |
 | `subject.Should().BeSameAs(expected)`                       | `Expect.That(subject).IsSameAs(expected)`                       |                                               |
 | `subject.Should().NotBeSameAs(unexpected)`                  | `Expect.That(subject).IsNotSameAs(unexpected)`                  |                                               |
@@ -147,9 +147,9 @@ matters, so an item that is itself a collection is still treated as a single ite
 | `subject.Should().NotContain(unexpected)`                               | `Expect.That(subject).DoesNotContain(unexpected)`                                                         | [null](#negated-inspections-fail-for-null)  |
 | `subject.Should().NotContain(collection)`                               | `Expect.That(subject).None().ComplyWith(x => x.IsOneOf(collection))`                                      | [numbers](#numbers-of-different-types)      |
 | `subject.Should().StartWith(expected)`                                  | `Expect.That(subject).StartsWith(expected)`                                                               | [empty](#empty-expectations-throw)          |
-| `subject.Should().NotStartWith(unexpected)`                             | `Expect.That(subject).DoesNotStartWith(unexpected)`                                                       |                                             |
+| `subject.Should().NotStartWith(unexpected)`                             | `Expect.That(subject).DoesNotStartWith(unexpected)`                                                       | [empty](#empty-expectations-throw)          |
 | `subject.Should().EndWith(expected)`                                    | `Expect.That(subject).EndsWith(expected)`                                                                 | [empty](#empty-expectations-throw)          |
-| `subject.Should().NotEndWith(unexpected)`                               | `Expect.That(subject).DoesNotEndWith(unexpected)`                                                         |                                             |
+| `subject.Should().NotEndWith(unexpected)`                               | `Expect.That(subject).DoesNotEndWith(unexpected)`                                                         | [empty](#empty-expectations-throw)          |
 | `subject.Should().ContainInOrder(collection)`                           | `Expect.That(subject).Contains(collection).IgnoringInterspersedItems()`                                   | [empty](#empty-expectations-throw)          |
 | `subject.Should().ContainInOrder(a, b, c)`                              | `Expect.That(subject).Contains([a, b, c]).IgnoringInterspersedItems()`                                    |                                             |
 | `subject.Should().ContainInConsecutiveOrder(collection)`                | `Expect.That(subject).Contains(collection)`                                                               | [empty](#empty-expectations-throw)          |
@@ -240,7 +240,7 @@ For elements that are compared by value (see [Equivalency](#equivalency)) or wit
 | `callback.Should().NotThrow<T>()` / `NotThrowAsync<T>()`         | `Expect.That(callback).DoesNotThrow<T>()`                    | [aggregate](#aggregateexception-is-not-unwrapped) |
 | `callback.Should().Throw<T>()` / `ThrowAsync<T>()`               | `Expect.That(callback).Throws<T>()`                          | [aggregate](#aggregateexception-is-not-unwrapped) |
 | `callback.Should().ThrowExactly<T>()` / `ThrowExactlyAsync<T>()` | `Expect.That(callback).ThrowsExactly<T>()`                   |                                                   |
-| `.WithMessage(pattern)`                                          | `.WithMessage(pattern).AsWildcard().IgnoringCase().IgnoringNewlineStyle()` |                                     |
+| `.WithMessage(pattern)`                                          | `.WithMessage(pattern).AsWildcard().IgnoringCase().IgnoringNewlineStyle()` | [pattern](#empty-wildcard-patterns) |
 | `.WithInnerException<T>()` / `(typeof(T))`                       | `.WithInner<T>()` / `.WithInner(typeof(T))`                  |                                                   |
 | `.WithParameterName(name)`                                       | `.WithParamName(name)`                                       |                                                   |
 
@@ -269,8 +269,8 @@ FluentAssertions continues on the inner exception there, whereas `WithInner` ret
 | `subject.Should().HaveYear(n)` (also `Month`/`Day`/`Hour`/`Minute`/`Second`/`Offset`) | `Expect.That(subject).HasYear().EqualTo(n)` (etc.)                      |                                      |
 | `subject.Should().NotHaveYear(n)` (and the other parts)                               | `Expect.That(subject).HasYear().NotEqualTo(n)` (etc.)                   |                                      |
 
-`BeCloseTo`, `NotBeCloseTo` and `BeOneOf` on dates are listed under [Equality](#equality); the
-[kind](#datetime-kinds) of a `DateTime` matters there as well.
+`Be`, `NotBe`, `BeCloseTo`, `NotBeCloseTo` and `BeOneOf` on dates are listed under
+[Equality](#equality); the [kind](#datetime-kinds) of a `DateTime` matters there as well.
 
 ## Enums and nullable values
 
@@ -279,7 +279,7 @@ FluentAssertions continues on the inner exception there, whereas `WithInner` ret
 | `subject.Should().BeDefined()`                 | `Expect.That(subject).IsDefined()`               |                                             |
 | `subject.Should().NotBeDefined()`              | `Expect.That(subject).IsNotDefined()`            |                                             |
 | `subject.Should().HaveFlag(flag)`              | `Expect.That(subject).HasFlag(flag)`             |                                             |
-| `subject.Should().NotHaveFlag(flag)`           | `Expect.That(subject).DoesNotHaveFlag(flag)`     |                                             |
+| `subject.Should().NotHaveFlag(flag)`           | `Expect.That(subject).DoesNotHaveFlag(flag)`     | [null](#negated-inspections-fail-for-null)  |
 | `subject.Should().HaveValue()` (`Nullable<T>`) | `Expect.That(subject).IsNotNull()`               |                                             |
 | `subject.Should().HaveValue(v)`                | `Expect.That(subject).HasValue(v)`               |                                             |
 | `subject.Should().NotHaveValue()`              | `Expect.That(subject).IsNull()`                  |                                             |
@@ -328,8 +328,8 @@ a few rules:
   instead of failing or passing.
 - **No silent guessing.** A comparison that cannot be answered honestly fails in both polarities.
 - **What you pass is what is compared.** The runtime type drives equivalency, `Equals` overrides are not
-  trusted, numbers of different types are not converted in equivalency, and an `AggregateException` is
-  not unwrapped.
+  trusted, numbers and enums of different types are not converted in equivalency, and an
+  `AggregateException` is not unwrapped.
 
 Each example below runs the original assertion and its rewrite on the same input and shows the outcome
 of both.
@@ -406,9 +406,9 @@ await That(items).None().ComplyWith(x => x.IsOneOf(unexpected));
 #### Negated inspections fail for null
 
 `NotBeEmpty()` and `NotContain("x")` pass in FluentAssertions for a `null` string, and `NotHaveValue(2)`
-passes for a `null` enum. The same holds for `Contain("x", AtMost.Once())`, `Contain("x", LessThan.Twice())`
-and any other occurrence constraint that allows zero occurrences. Their rewrites fail, because an
-expectation that inspects the content has nothing to inspect in `null`.
+and `NotHaveFlag(flag)` pass for a `null` enum. The same holds for `Contain("x", AtMost.Once())`,
+`Contain("x", LessThan.Twice())` and any other occurrence constraint that allows zero occurrences. Their
+rewrites fail, because an expectation that inspects the content has nothing to inspect in `null`.
 
 ```csharp
 string? subject = null;
@@ -482,9 +482,10 @@ await That(subject).IsNotBetween(3).And(1);
 #### Empty expectations throw
 
 `StartWith("")`, `EndWith("")`, and `StartWith`, `ContainInOrder` or `ContainInConsecutiveOrder` with an
-empty collection pass in FluentAssertions for every subject. The rewrites throw an `ArgumentException`,
-because an expectation that cannot fail checks nothing. Remove the assertion or expect something
-concrete.
+empty collection pass in FluentAssertions for every subject. `NotStartWith("")`, `NotEndWith("")`, and
+`BeOneOf` with an empty collection fail for every subject. The rewrites throw an `ArgumentException`,
+because an expectation that cannot fail checks nothing, and one that cannot pass is a mistake. Remove the
+assertion or expect something concrete.
 
 ```csharp
 string subject = "abc";
@@ -493,13 +494,19 @@ string subject = "abc";
 subject.Should().StartWith("");
 // aweXpect: throws an ArgumentException
 await That(subject).StartsWith("");
+
+// FluentAssertions: fails
+subject.Should().NotStartWith("");
+// aweXpect: throws an ArgumentException
+await That(subject).DoesNotStartWith("");
 ```
 
 #### Empty wildcard patterns
 
-`Match("")` on a string throws an `ArgumentException` in FluentAssertions. The rewrite
-`IsEqualTo("").AsWildcard()` does not throw: an empty pattern matches only the empty string, so it passes
-for `""` and fails for any other subject.
+`Match("")` on a string and `WithMessage("")` on an exception throw an `ArgumentException` in
+FluentAssertions. The rewrites `IsEqualTo("").AsWildcard()` and `WithMessage("").AsWildcard()` do not
+throw: an empty pattern matches only the empty string, so it passes for `""` and fails for any other
+subject or message.
 
 ```csharp
 string subject = "";
@@ -508,6 +515,13 @@ string subject = "";
 subject.Should().Match("");
 // aweXpect: passes
 await That(subject).IsEqualTo("").AsWildcard();
+
+Action callback = () => throw new Exception("");
+
+// FluentAssertions: throws an ArgumentException
+callback.Should().Throw<Exception>().WithMessage("");
+// aweXpect: passes
+await That(callback).Throws<Exception>().WithMessage("").AsWildcard().IgnoringCase().IgnoringNewlineStyle();
 ```
 
 #### Occurrences are counted without overlap
@@ -545,7 +559,7 @@ await That(subject).All().Are<Exception>();
 Check the described types explicitly:
 
 ```csharp
-await That(types).All().Satisfy(type => typeof(Exception).IsAssignableFrom(type));
+await That(subject).All().Satisfy(type => typeof(Exception).IsAssignableFrom(type));
 ```
 
 ### Structural equivalency
@@ -596,6 +610,28 @@ The following differences remain:
   // aweXpect: fails, as Age is an int and 30L is a long
   await That(subject).IsEquivalentTo(new { Age = 30L }, o => o.IgnoringCollectionOrder());
   ```
+- **Enums of different types are not equivalent.** FluentAssertions compares enum members by their value,
+  also across enum types; aweXpect compares them with `Equals`, which requires the same type. Compare such
+  a pair of types with a predicate.
+  ```csharp
+  // class Album { public Genre Genre { get; set; } }
+  // enum Genre { Pop, Rock } and enum GenreDto { Pop, Rock }
+  Album subject = new Album { Genre = Genre.Rock };
+
+  // FluentAssertions: passes
+  subject.Should().BeEquivalentTo(new { Genre = GenreDto.Rock });
+  // aweXpect: fails, as Genre and GenreDto are different types
+  await That(subject).IsEquivalentTo(new { Genre = GenreDto.Rock }, o => o.IgnoringCollectionOrder());
+  ```
+  ```csharp
+  await That(subject).IsEquivalentTo(new { Genre = GenreDto.Rock }, o => o
+      .IgnoringCollectionOrder()
+      .Comparing<Genre, GenreDto>((genre, dto) => (int)genre == (int)dto));
+  ```
+- **Cyclic references and deep graphs are compared.** FluentAssertions fails for a cyclic reference
+  without `IgnoringCyclicReferences()` and for a graph nested deeper than 10 levels. aweXpect detects
+  cycles and fails only at a depth of 100 nested objects, so the rewrite passes for such graphs when they
+  are equivalent.
 
 ### Exceptions
 
@@ -604,7 +640,8 @@ The following differences remain:
 FluentAssertions looks through an `AggregateException`, so `Throw<ArgumentException>()` passes for an
 aggregate that wraps an `ArgumentException`, and `NotThrow<ArgumentException>()` fails for it. aweXpect
 compares the exception the delegate actually threw, so `Throws<ArgumentException>()` fails and
-`DoesNotThrow<ArgumentException>()` passes.
+`DoesNotThrow<ArgumentException>()` passes. For the same reason, `Throws<Exception>()` passes for an
+`AggregateException` without inner exceptions, for which `Throw<Exception>()` fails in FluentAssertions.
 
 ```csharp
 Action callback = () => throw new AggregateException(new ArgumentException());
@@ -627,10 +664,10 @@ await That(callback).Throws<AggregateException>().WithInner<ArgumentException>()
 
 A `DateTime` with `DateTimeKind.Local` and one with `DateTimeKind.Utc` describe different instants for
 the same ticks; FluentAssertions ignores the kind. aweXpect does not guess which instant was meant: the
-ordering expectations (`IsAfter`, `IsBefore` and their variants) fail for such a pair in both polarities,
-`IsEqualTo(...).Within(...)` fails and its negation passes, `IsOneOf` ignores a value of the other kind, and
-`IsInAscendingOrder` fails for a collection that mixes both kinds. `DateTimeKind.Unspecified` is compatible
-with both.
+ordering expectations (`IsAfter`, `IsBefore` and their variants) fail for such a pair in both polarities;
+`IsEqualTo` fails and `IsNotEqualTo` passes, with or without `Within(...)`, even for the same ticks;
+`IsOneOf` ignores a value of the other kind; and `IsInAscendingOrder` fails for a collection that mixes
+both kinds. `DateTimeKind.Unspecified` is compatible with both.
 
 ```csharp
 DateTime subject = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
@@ -645,6 +682,13 @@ await That(subject).IsAfter(expected);
 subject.Should().NotBeAfter(expected);
 // aweXpect: fails as well
 await That(subject).IsNotAfter(expected);
+
+DateTime local = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Local);
+
+// FluentAssertions: passes, as it compares only 12:00 with 12:00
+subject.Should().Be(local);
+// aweXpect: fails
+await That(subject).IsEqualTo(local);
 ```
 
 Convert the values before comparing them:
