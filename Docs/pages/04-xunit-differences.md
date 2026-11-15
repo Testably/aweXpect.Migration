@@ -29,6 +29,10 @@ await That(actualSet).IsEqualTo(expectedSet).InAnyOrder();
 
 `Assert.Equal` ignores the kind of a `DateTime`, with or without a precision. aweXpect does not compare a `DateTimeKind.Local` value with a `DateTimeKind.Utc` value, because the same ticks describe different instants, so the rewrite fails for such a pair. Convert the values with `ToUniversalTime()` first.
 
+## Comparers without hash codes
+
+`Assert.Distinct(actual, comparer)` collects the items in a `HashSet<T>` and therefore only compares items whose hash codes from the comparer are equal. `AreUnique().Using(comparer)` compares the items with `Equals` of the comparer alone. A comparer whose `GetHashCode` agrees with its `Equals` gives the same result; a comparer that keeps the default hash code of the items, or throws in `GetHashCode`, can find duplicates in aweXpect that xUnit missed, or pass where xUnit threw. Implement `GetHashCode` of the comparer to agree with its `Equals`.
+
 ## Empty substrings throw
 
 `Assert.Contains("", actual)`, `Assert.StartsWith("", actual)` and `Assert.EndsWith("", actual)` pass for every string. The rewrites throw an `ArgumentException`, because an expectation that cannot fail checks nothing.

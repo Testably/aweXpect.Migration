@@ -114,9 +114,11 @@ The code fix offers no rewrite when it cannot translate an assertion without los
 | FluentAssertions | A chain that continues on a second `.Should()`, for example after `.Which`                                    | [FluentAssertions](./01-fluentassertions.md)                                        |
 | FluentAssertions | A chained call without an aweXpect counterpart, such as `Where(...)`, and any call after `WithInnerException` | [Exceptions](./01-fluentassertions.md#exceptions)                                   |
 | FluentAssertions | `BeCloseTo` or `NotBeCloseTo` with a constant delta that does not fit the subject type                        | [Equality](./01-fluentassertions.md#equality)                                       |
+| FluentAssertions | `Be`, `NotBe` or `BeOneOf` with an `IEqualityComparer<T>`                                                     | [Equality](./01-fluentassertions.md#equality)                                       |
+| FluentAssertions | `BeInAscendingOrder` and the other ordering assertions with a comparison delegate                             | [Ordering](./01-fluentassertions.md#containment-ordering-and-predicates)            |
 | FluentAssertions | Equivalency options other than the ordering and, for strings and items compared by value, the string options  | [Equivalency](./01-fluentassertions.md#equivalency)                                 |
 | FluentAssertions | `BeAssignableTo` or `NotBeAssignableTo` on a `System.Type` subject                                            | [Assertions on a `Type`](./02-fluentassertions-differences.md#assertions-on-a-type) |
-| xUnit            | An additional argument such as a comparer or `ignoreCase: true`                                               | [Equality](./03-xunit.md#equality)                                                  |
+| xUnit            | A comparer on `Assert.Equal`, `Assert.NotEqual`, `Assert.Contains` or `Assert.DoesNotContain`, or `ignoreCase: true` | [Equality](./03-xunit.md#equality)                                            |
 | xUnit            | A `StringComparison` other than a constant `Ordinal` or `OrdinalIgnoreCase`                                   | [Strings](./03-xunit.md#strings)                                                    |
 | xUnit            | An `exactMatch` argument that is not a `true` or `false` literal                                              | [Types](./03-xunit.md#types)                                                        |
 

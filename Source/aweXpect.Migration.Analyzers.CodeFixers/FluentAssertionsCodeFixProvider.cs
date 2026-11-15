@@ -463,6 +463,11 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 			if (symbol is IMethodSymbol { Parameters.Length: > 0 } methodSymbol &&
 			    !IsString(methodSymbol.Parameters[0].Type))
 			{
+				if (methodSymbol.Parameters[0].Type.Name == "Func")
+				{
+					return null;
+				}
+
 				if (methodSymbol.Parameters[0].Type.Name.StartsWith("IComparer"))
 				{
 					return await ParseExpressionWithBecauseSupport(context, actual, arguments,
@@ -542,6 +547,13 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 				: ", " + IgnoringCollectionOrder(semanticModel, mainMethod)) + ")",
 			methods, becauseIndex);
 	}
+
+	/// <summary>
+	///     FluentAssertions fails for a subject that is not of the type of the comparer, e.g. <see langword="null" />,
+	///     without calling it, whereas <c>Using</c> in aweXpect passes every subject to the comparer.
+	/// </summary>
+	private static bool HasEqualityComparerParameter(IMethodSymbol? methodSymbol)
+		=> methodSymbol?.Parameters.Any(parameter => parameter.Type.Name == "IEqualityComparer") == true;
 
 	private static async Task<string?> BeOneOf(
 		CodeFixContext context,
@@ -697,7 +709,8 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		ISymbol? symbol = semanticModel?.GetSymbolInfo(mainMethod.Method).Symbol;
 		if (symbol is IMethodSymbol { Parameters.Length: > 0 } methodSymbol &&
 		    ((mainMethod.Arguments.Count == 1 && methodSymbol.Parameters.Length == 1 &&
-		      !IsString(methodSymbol.Parameters[0].Type) && IsEnumerable(methodSymbol.Parameters[0].Type)) ||
+		      !IsString(methodSymbol.Parameters[0].Type) && IsEnumerable(methodSymbol.Parameters[0].Type) &&
+		      !IsExpandedParamsArgument(semanticModel, mainMethod)) ||
 		     (methodSymbol.Parameters.Length > 1 && IsString(methodSymbol.Parameters[1].Type)))
 		   )
 		{
@@ -710,6 +723,15 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 			$".Contains([{string.Join(", ", mainMethod.Arguments)}]){expressionSuffix}",
 			methods);
 	}
+
+	/// <summary>
+	///     A single item passed to a <see langword="params" /> array, e.g. <c>ContainInOrder(1)</c>, is an item, not the
+	///     collection of expected items.
+	/// </summary>
+	private static bool IsExpandedParamsArgument(SemanticModel? semanticModel, MethodDefinition method)
+		=> method.Method.Parent is InvocationExpressionSyntax invocation &&
+		   semanticModel?.GetOperation(invocation) is IInvocationOperation operation &&
+		   operation.Arguments.Any(argument => argument.ArgumentKind == ArgumentKind.ParamArray);
 
 	private static async Task<string?> Match(
 		CodeFixContext context,
@@ -948,6 +970,11 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 
 		if (methodName is "BeCloseTo" or "NotBeCloseTo" &&
 		    IsDeltaConstantOutOfRange(semanticModel, methodSymbol, mainMethod))
+		{
+			return null;
+		}
+
+		if (methodName is "Be" or "NotBe" or "BeOneOf" && HasEqualityComparerParameter(methodSymbol))
 		{
 			return null;
 		}

@@ -139,12 +139,21 @@ public static class TestCases
 		theoryData.AddWithBecause("int[] subject = [1, 2,];",
 			"subject.Should().ContainInOrder(1, 2, 3)",
 			"Expect.That(subject).Contains([1, 2, 3]).IgnoringInterspersedItems()");
+		theoryData.AddWithBecause("int[] subject = [1, 2,];",
+			"subject.Should().ContainInOrder(1)",
+			"Expect.That(subject).Contains([1]).IgnoringInterspersedItems()");
+		theoryData.AddWithBecause("string[] subject = [\"a\",];",
+			"subject.Should().ContainInOrder(\"a\")",
+			"Expect.That(subject).Contains([\"a\"]).IgnoringInterspersedItems()");
 		theoryData.AddWithBecause("int[] subject = [1, 2,];int[] expected = [1, 2,];",
 			"subject.Should().ContainInConsecutiveOrder(expected, {0})",
 			"Expect.That(subject).Contains(expected)");
 		theoryData.AddWithBecause("int[] subject = [1, 2,];",
 			"subject.Should().ContainInConsecutiveOrder(1, 2, 3)",
 			"Expect.That(subject).Contains([1, 2, 3])");
+		theoryData.AddWithBecause("int[] subject = [1, 2,];",
+			"subject.Should().ContainInConsecutiveOrder(1)",
+			"Expect.That(subject).Contains([1])");
 		theoryData.AddWithBecause("int[] subject = [1, 2,];int[] expected = [1, 2,];",
 			"subject.Should().Contain(expected, {0})",
 			"Expect.That(subject).Contains(expected).InAnyOrder().IgnoringDuplicates()");
@@ -488,6 +497,22 @@ public static class TestCases
 			"subject.Should().BeCloseTo(1, '\\uffff')"));
 		theoryData.Add(("sbyte subject = 1;",
 			"subject.Should().BeCloseTo(1, byte.MaxValue)"));
+		theoryData.Add((
+			"Exception subject = new();Exception expected = new();IEqualityComparer<Exception> comparer = EqualityComparer<Exception>.Default;",
+			"subject.Should().Be(expected, comparer)"));
+		theoryData.Add((
+			"Exception subject = new();Exception unexpected = new();IEqualityComparer<Exception> comparer = EqualityComparer<Exception>.Default;",
+			"subject.Should().NotBe(unexpected, comparer, \"because {0}\", 1)"));
+		theoryData.Add((
+			"Exception subject = new();Exception[] expected = [];IEqualityComparer<Exception> comparer = EqualityComparer<Exception>.Default;",
+			"subject.Should().BeOneOf(expected, comparer)"));
+		theoryData.Add((
+			"Exception subject = new();Exception[] expected = [];IEqualityComparer<Exception> comparer = EqualityComparer<Exception>.Default;",
+			"subject.Should().BeOneOf(expected, comparer, \"because {0}\", 1)"));
+		theoryData.Add(("int[] subject = [1, 2,];",
+			"subject.Should().BeInAscendingOrder((a, b) => a.CompareTo(b))"));
+		theoryData.Add(("int[] subject = [1, 2,];",
+			"subject.Should().NotBeInDescendingOrder((a, b) => a.CompareTo(b), \"because {0}\", 1)"));
 		return theoryData;
 	}
 

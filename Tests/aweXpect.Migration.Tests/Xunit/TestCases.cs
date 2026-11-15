@@ -61,6 +61,12 @@ public static class TestCases
 		theoryData.AddTestCase("int[] subject = [1, 2,];",
 			"Assert.Distinct(subject)",
 			"Expect.That(subject).All().AreUnique()");
+		theoryData.AddTestCase("int[] subject = [1, 2,];IEqualityComparer<int> comparer = EqualityComparer<int>.Default;",
+			"Assert.Distinct(subject, comparer)",
+			"Expect.That(subject).All().AreUnique().Using(comparer)");
+		theoryData.AddTestCase("string[] subject = [\"a\", \"b\",];",
+			"Assert.Distinct(subject, StringComparer.OrdinalIgnoreCase)",
+			"Expect.That(subject).All().AreUnique().Using(StringComparer.OrdinalIgnoreCase)");
 		theoryData.AddTestCase("int[] subject = [1, 2,];",
 			"Assert.Contains(1, subject)",
 			"Expect.That(subject).Contains(1)");

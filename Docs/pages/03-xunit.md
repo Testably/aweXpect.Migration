@@ -164,16 +164,19 @@ Expect.That(title).StartsWith("ABBEY").IgnoringCase();
 
 ## Collections
 
-| xUnit construct                                 | Rewritten to                                         |
-|-------------------------------------------------|------------------------------------------------------|
-| `Assert.Distinct(actual)`                       | `Expect.That(actual).All().AreUnique()`              |
-| `Assert.Contains(expected, collection)`         | `Expect.That(collection).Contains(expected)`         |
-| `Assert.Contains(collection, predicate)`        | `Expect.That(collection).Contains(predicate)`        |
-| `Assert.DoesNotContain(unexpected, collection)` | `Expect.That(collection).DoesNotContain(unexpected)` |
-| `Assert.Contains(key, dictionary)`              | `Expect.That(dictionary).ContainsKey(key)`           |
-| `Assert.DoesNotContain(key, dictionary)`        | `Expect.That(dictionary).DoesNotContainKey(key)`     |
-| `Assert.Empty(collection)`                      | `Expect.That(collection).IsEmpty()`                  |
-| `Assert.NotEmpty(collection)`                   | `Expect.That(collection).IsNotEmpty()`               |
+| xUnit construct                                 | Rewritten to                                                | Note                                                                    |
+|-------------------------------------------------|-------------------------------------------------------------|-------------------------------------------------------------------------|
+| `Assert.Distinct(actual)`                       | `Expect.That(actual).All().AreUnique()`                     |                                                                         |
+| `Assert.Distinct(actual, comparer)`             | `Expect.That(actual).All().AreUnique().Using(comparer)`     | [hash codes](./04-xunit-differences.md#comparers-without-hash-codes)    |
+| `Assert.Contains(expected, collection)`         | `Expect.That(collection).Contains(expected)`                |                                                                         |
+| `Assert.Contains(collection, predicate)`        | `Expect.That(collection).Contains(predicate)`               |                                                                         |
+| `Assert.DoesNotContain(unexpected, collection)` | `Expect.That(collection).DoesNotContain(unexpected)`        |                                                                         |
+| `Assert.Contains(key, dictionary)`              | `Expect.That(dictionary).ContainsKey(key)`                  |                                                                         |
+| `Assert.DoesNotContain(key, dictionary)`        | `Expect.That(dictionary).DoesNotContainKey(key)`            |                                                                         |
+| `Assert.Empty(collection)`                      | `Expect.That(collection).IsEmpty()`                         |                                                                         |
+| `Assert.NotEmpty(collection)`                   | `Expect.That(collection).IsNotEmpty()`                      |                                                                         |
+
+A comparer on `Assert.Contains` or `Assert.DoesNotContain` leaves the assertion for manual migration, as on `Assert.Equal`.
 
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 

@@ -79,6 +79,8 @@ A note in the last column marks a rewrite that behaves differently in some cases
 
 For an integral subject, FluentAssertions takes the delta of `BeCloseTo` as the unsigned counterpart of the subject type (`uint` for `int`). When the delta does not convert implicitly, the code fix casts it to the subject type, e.g. `Within((int)delta)`. A constant delta that does not fit the subject type, such as `uint.MaxValue` for an `int`, is left for manual migration.
 
+`Be`, `NotBe` and `BeOneOf` with an `IEqualityComparer<T>` are left for manual migration as well. FluentAssertions fails for a subject that is not a `T`, such as `null`, without calling the comparer, whereas `Using(comparer)` in aweXpect passes every subject to the comparer.
+
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
 ```csharp title="Before (FluentAssertions)"
@@ -322,6 +324,10 @@ These cover both string and collection subjects; the code fix dispatches on the 
 | `subject.Should().Match(pattern)` *(string subject)*                    | `Expect.That(subject).IsEqualTo(pattern).AsWildcard()`                                                    | [empty patterns](./02-fluentassertions-differences.md#empty-wildcard-patterns)           |
 
 For items that are compared by value (see [Equivalency](#equivalency)), `ContainEquivalentOf` and `NotContainEquivalentOf` are rewritten to `Contains(expected)` and `DoesNotContain(unexpected)` without `Equivalent()`. With `o => o.WithStrictOrdering()` they use `Equivalent()` without options.
+
+Items passed one by one to `ContainInOrder` or `ContainInConsecutiveOrder` become a collection expression, also a single item: `ContainInOrder(a)` is rewritten to `Contains([a]).IgnoringInterspersedItems()`.
+
+The ordering assertions with a comparison delegate, such as `BeInAscendingOrder((a, b) => a.CompareTo(b))`, are left for manual migration, because `Using` in aweXpect takes an `IComparer<T>`. Wrap the delegate in `Comparer<T>.Create(...)`.
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 

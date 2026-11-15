@@ -103,6 +103,11 @@ public class XunitAssertionCodeFixProviderTests
 	[Arguments("Assert.StartsWith(\"a\", \"A\", DateTime.Now.Ticks > 0 ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)")]
 	[Arguments("Assert.EndsWith(\"a\", \"A\", StringComparison.InvariantCulture)")]
 	[Arguments("Assert.Contains(1, new[] { 1, }, System.Collections.Generic.EqualityComparer<int>.Default)")]
+	[Arguments("Assert.Contains(\"a\", new[] { \"A\" }, StringComparer.OrdinalIgnoreCase)")]
+	[Arguments("Assert.DoesNotContain(\"a\", new[] { \"A\" }, StringComparer.OrdinalIgnoreCase)")]
+	[Arguments("Assert.Equal(new[] { \"a\" }, new[] { \"A\" }, StringComparer.OrdinalIgnoreCase)")]
+	[Arguments("Assert.Equal(new[] { 1 }, new[] { 1 }, (x, y) => x == y)")]
+	[Arguments("Assert.NotEqual(\"a\", \"A\", StringComparer.OrdinalIgnoreCase)")]
 	[Arguments("Assert.Throws<ArgumentException>(testCode: () => {}, paramName: \"foo\")")]
 	public async Task UnsupportedArguments_ShouldNotOfferCodeFix(string xunitAssertion)
 	{
