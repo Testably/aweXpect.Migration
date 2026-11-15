@@ -13,17 +13,45 @@ The fixer rewrites the entire `.Should()` chain in one step: the `Should()` call
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
 ```csharp title="Before (FluentAssertions)"
-int[] subject = // ...
+string title = // ...
+string[] tracks = // ...
+int playCount = // ...
+double rating = // ...
+DateTime releaseDate = // ...
+Action play = // ...
 
-// highlight-next-line
-subject.Should().Contain(1).And.Contain(2, "because foo");
+// highlight-start
+title.Should().NotBeNullOrEmpty();
+title.Should().StartWith("Abbey", "the album title was set");
+tracks.Should().HaveCount(17).And.Contain("Come Together");
+tracks.Should().ContainInOrder("Something", "Octopus's Garden");
+tracks.Should().OnlyHaveUniqueItems();
+playCount.Should().BeGreaterThan(0);
+rating.Should().BeApproximately(4.5, 0.1);
+releaseDate.Should().HaveYear(1969);
+play.Should().Throw<InvalidOperationException>().WithMessage("*no tracks*");
+// highlight-end
 ```
 
 ```csharp title="After (aweXpect)"
-int[] subject = // ...
+string title = // ...
+string[] tracks = // ...
+int playCount = // ...
+double rating = // ...
+DateTime releaseDate = // ...
+Action play = // ...
 
-// highlight-next-line
-Expect.That(subject).Contains(1).And.Contains(2).Because("because foo");
+// highlight-start
+Expect.That(title).IsNotNullOrEmpty();
+Expect.That(title).StartsWith("Abbey").Because("the album title was set");
+Expect.That(tracks).HasCount(17).And.Contains("Come Together");
+Expect.That(tracks).Contains(["Something", "Octopus's Garden"]).IgnoringInterspersedItems();
+Expect.That(tracks).All().AreUnique();
+Expect.That(playCount).IsGreaterThan(0);
+Expect.That(rating).IsEqualTo(4.5).Within(0.1);
+Expect.That(releaseDate).HasYear().EqualTo(1969);
+Expect.That(play).Throws<InvalidOperationException>().WithMessage("*no tracks*").AsWildcard().IgnoringCase().IgnoringNewlineStyle();
+// highlight-end
 ```
 
 </ApplyFix>
@@ -60,6 +88,32 @@ subject type (`uint` for `int`). When the delta does not convert implicitly, the
 subject type, e.g. `Within((int)delta)`. A constant delta that does not fit the subject type, such as
 `uint.MaxValue` for an `int`, is left for manual migration.
 
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
+double rating = // ...
+DateTime releaseDate = // ...
+DateTime expected = // ...
+
+// highlight-start
+rating.Should().BeApproximately(4.5, 0.1);
+releaseDate.Should().BeCloseTo(expected, TimeSpan.FromDays(1));
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+double rating = // ...
+DateTime releaseDate = // ...
+DateTime expected = // ...
+
+// highlight-start
+Expect.That(rating).IsEqualTo(4.5).Within(0.1);
+Expect.That(releaseDate).IsEqualTo(expected).Within(TimeSpan.FromDays(1));
+// highlight-end
+```
+
+</ApplyFix>
+
 ### Equivalency
 
 `Should().BeEquivalentTo(...)` and `Should().NotBeEquivalentTo(...)` dispatch on the called overload and
@@ -90,6 +144,39 @@ compared with options ignores case only when the options contain `IgnoringCase()
 
 For structural comparisons, options other than `WithStrictOrdering()` and `WithoutStrictOrdering()` have no automatic translation, so no code fix is offered. `NotBeEquivalentTo` is translated symmetrically (`IsNotEqualTo` / `IsNotEquivalentTo`). See also [Structural equivalency](#structural-equivalency) under the behavioral differences.
 
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
+string title = // ...
+int[] trackNumbers = // ...
+int[] expected = // ...
+object album = // ...
+
+// highlight-start
+title.Should().BeEquivalentTo("abbey road");
+trackNumbers.Should().BeEquivalentTo(expected);
+album.Should().BeEquivalentTo(new { Title = "Abbey Road", Year = 1969 });
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+// highlight-next-line
+using aweXpect.Equivalency;
+
+string title = // ...
+int[] trackNumbers = // ...
+int[] expected = // ...
+object album = // ...
+
+// highlight-start
+Expect.That(title).IsEqualTo("abbey road").IgnoringCase();
+Expect.That(trackNumbers).IsEqualTo(expected).InAnyOrder();
+Expect.That(album).IsEquivalentTo(new { Title = "Abbey Road", Year = 1969 }, o => o.IgnoringCollectionOrder());
+// highlight-end
+```
+
+</ApplyFix>
+
 ## Null and emptiness
 
 | FluentAssertions construct                              | Rewritten to                                     | Note                                        |
@@ -104,6 +191,30 @@ For structural comparisons, options other than `WithStrictOrdering()` and `Witho
 | `subject.Should().NotBeNullOrEmpty()` *(collection)*    | `Expect.That(subject).IsNotEmpty()`              |                                             |
 | `subject.Should().BeNullOrWhiteSpace()`                 | `Expect.That(subject).IsNullOrWhiteSpace()`      |                                             |
 | `subject.Should().NotBeNullOrWhiteSpace()`              | `Expect.That(subject).IsNotNullOrWhiteSpace()`   |                                             |
+
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
+string[] bonusTracks = // ...
+string[] tracks = // ...
+
+// highlight-start
+bonusTracks.Should().BeNullOrEmpty();
+tracks.Should().NotBeNullOrEmpty();
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+string[] bonusTracks = // ...
+string[] tracks = // ...
+
+// highlight-start
+Expect.That(bonusTracks).IsNull().Or.IsEmpty();
+Expect.That(tracks).IsNotEmpty();
+// highlight-end
+```
+
+</ApplyFix>
 
 ## Booleans
 
@@ -134,6 +245,28 @@ whichever form was used.
 On a `System.Type` subject, `BeAssignableTo` and `NotBeAssignableTo` are not rewritten; see
 [Assertions on a Type](#assertions-on-a-type).
 
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
+Exception error = // ...
+
+// highlight-start
+error.Should().BeAssignableTo<ArgumentException>();
+error.Should().BeOfType<ArgumentNullException>();
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+Exception error = // ...
+
+// highlight-start
+Expect.That(error).Is<ArgumentException>();
+Expect.That(error).IsExactly<ArgumentNullException>();
+// highlight-end
+```
+
+</ApplyFix>
+
 ## Numbers
 
 | FluentAssertions construct                                      | Rewritten to                                            | Note                                   |
@@ -148,6 +281,24 @@ On a `System.Type` subject, `BeAssignableTo` and `NotBeAssignableTo` are not rew
 | `subject.Should().BeLessOrEqualTo(expected)` *(legacy FA 7)*    | `Expect.That(subject).IsLessThanOrEqualTo(expected)`    |                                        |
 | `subject.Should().BeInRange(low, high)`                         | `Expect.That(subject).IsBetween(low).And(high)`         | [range](#reversed-ranges-throw)        |
 | `subject.Should().NotBeInRange(low, high)`                      | `Expect.That(subject).IsNotBetween(low).And(high)`      | [range](#reversed-ranges-throw)        |
+
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
+int rating = // ...
+
+// highlight-next-line
+rating.Should().BeInRange(1, 5);
+```
+
+```csharp title="After (aweXpect)"
+int rating = // ...
+
+// highlight-next-line
+Expect.That(rating).IsBetween(1).And(5);
+```
+
+</ApplyFix>
 
 ## Containment, ordering and predicates
 
@@ -189,6 +340,30 @@ matters, so an item that is itself a collection is still treated as a single ite
 `ContainEquivalentOf` and `NotContainEquivalentOf` use `Equivalent()` without options for items that are
 compared by value (see [Equivalency](#equivalency)) and with `o => o.WithStrictOrdering()`.
 
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
+string[] tracks = // ...
+string[] favorites = // ...
+
+// highlight-start
+tracks.Should().Contain(favorites);
+tracks.Should().ContainInOrder("Something", "Octopus's Garden");
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+string[] tracks = // ...
+string[] favorites = // ...
+
+// highlight-start
+Expect.That(tracks).Contains(favorites).InAnyOrder().IgnoringDuplicates();
+Expect.That(tracks).Contains(["Something", "Octopus's Garden"]).IgnoringInterspersedItems();
+// highlight-end
+```
+
+</ApplyFix>
+
 ### Occurrence constraints on `Contain` (string subjects)
 
 `Should().Contain(expected, occurrence)` translates the full FluentAssertions occurrence family. The
@@ -217,6 +392,28 @@ compared by value (see [Equivalency](#equivalency)) and with `o => o.WithStrictO
 | `MoreThan.Thrice()`         | `.MoreThan(3.Times())`  |                                             |
 | `MoreThan.Times(n)`         | `.MoreThan(n)`          |                                             |
 
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
+string lyrics = // ...
+
+// highlight-start
+lyrics.Should().Contain("love", AtLeast.Twice());
+lyrics.Should().Contain("yesterday", Exactly.Once());
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+string lyrics = // ...
+
+// highlight-start
+Expect.That(lyrics).Contains("love").AtLeast().Twice();
+Expect.That(lyrics).Contains("yesterday").Once();
+// highlight-end
+```
+
+</ApplyFix>
+
 ## Collections
 
 In addition to the containment and ordering assertions above, these collection-specific forms are recognized:
@@ -239,6 +436,30 @@ For elements that are compared by value (see [Equivalency](#equivalency)) or wit
 | `o => o.IgnoringTrailingWhitespace()` | `.IgnoringTrailingWhiteSpace()` |
 | `o => o.IgnoringNewlineStyle()`       | `.IgnoringNewlineStyle()`       |
 | `o => o.WithoutStrictOrdering()`      | `.InAnyOrder()`                 |
+
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
+string[] genres = // ...
+Exception[] errors = // ...
+
+// highlight-start
+genres.Should().AllBeEquivalentTo("rock", o => o.IgnoringCase());
+errors.Should().AllBeOfType<ArgumentException>();
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+string[] genres = // ...
+Exception[] errors = // ...
+
+// highlight-start
+Expect.That(genres).All().AreEqualTo("rock").IgnoringCase();
+Expect.That(errors).All().AreExactly<ArgumentException>();
+// highlight-end
+```
+
+</ApplyFix>
 
 ## Object equivalency
 
@@ -298,6 +519,28 @@ FluentAssertions continues on the inner exception there, whereas `WithInner` ret
 
 `Be`, `NotBe`, `BeCloseTo`, `NotBeCloseTo` and `BeOneOf` on dates are listed under
 [Equality](#equality); the [kind](#datetime-kinds) of a `DateTime` matters there as well.
+
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
+DateTime releaseDate = // ...
+
+// highlight-start
+releaseDate.Should().HaveYear(1969);
+releaseDate.Should().NotHaveMonth(1);
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+DateTime releaseDate = // ...
+
+// highlight-start
+Expect.That(releaseDate).HasYear().EqualTo(1969);
+Expect.That(releaseDate).HasMonth().NotEqualTo(1);
+// highlight-end
+```
+
+</ApplyFix>
 
 ## Enums and nullable values
 

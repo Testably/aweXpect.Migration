@@ -13,24 +13,46 @@ The fixer rewrites each `Xunit.Assert.*` call into the corresponding
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 
 ```csharp title="Before (xUnit)"
-string expected = // ...
-string actual = // ...
-Action callback = // ...
+string title = // ...
+string[] tracks = // ...
+Dictionary<string, int> playCounts = // ...
+double duration = // ...
+object album = // ...
+Action play = // ...
 
 // highlight-start
-Assert.Equal(expected, actual);
-Assert.Throws<ArgumentException>(callback);
+Assert.NotNull(title);
+Assert.StartsWith("Abbey", title);
+Assert.Equal(17, tracks.Length);
+Assert.Contains("Come Together", tracks);
+Assert.DoesNotContain("Yesterday", tracks);
+Assert.Contains("Something", playCounts);
+Assert.True(duration > 0, "the album has a duration");
+Assert.Equal(47.1, duration, 1);
+Assert.IsType<string>(album);
+Assert.Throws<InvalidOperationException>(play);
 // highlight-end
 ```
 
 ```csharp title="After (aweXpect)"
-string expected = // ...
-string actual = // ...
-Action callback = // ...
+string title = // ...
+string[] tracks = // ...
+Dictionary<string, int> playCounts = // ...
+double duration = // ...
+object album = // ...
+Action play = // ...
 
 // highlight-start
-Expect.That(actual).IsEqualTo(expected);
-Expect.That(callback).ThrowsExactly<ArgumentException>();
+Expect.That(title).IsNotNull();
+Expect.That(title).StartsWith("Abbey");
+Expect.That(tracks.Length).IsEqualTo(17);
+Expect.That(tracks).Contains("Come Together");
+Expect.That(tracks).DoesNotContain("Yesterday");
+Expect.That(playCounts).ContainsKey("Something");
+Expect.That(duration > 0).IsTrue().Because("the album has a duration");
+Expect.That(Math.Round(duration, 1)).IsEqualTo(Math.Round(47.1, 1));
+Expect.That(album).IsExactly<string>();
+Expect.That(play).ThrowsExactly<InvalidOperationException>();
 // highlight-end
 ```
 
@@ -50,6 +72,20 @@ A note in the last column marks a rewrite that behaves differently in some cases
 | `Assert.NotNull(subject)`          | `Expect.That(subject).IsNotNull()`          |
 | `Assert.Same(expected, actual)`    | `Expect.That(actual).IsSameAs(expected)`    |
 | `Assert.NotSame(expected, actual)` | `Expect.That(actual).IsNotSameAs(expected)` |
+
+<ApplyFix id="aweXpectM003" migrateTo="aweXpect">
+
+```csharp title="Before (xUnit)"
+// highlight-next-line
+Assert.Fail("The album has no tracks");
+```
+
+```csharp title="After (aweXpect)"
+// highlight-next-line
+Fail.Test("The album has no tracks");
+```
+
+</ApplyFix>
 
 ## Booleans
 
@@ -77,6 +113,24 @@ express, so the rewrite rounds them the same way. A `MidpointRounding` argument 
 comparer, `ignoreCase: true` or a `StringComparison` on `Assert.Contains`, leaves the assertion for manual
 migration.
 
+<ApplyFix id="aweXpectM003" migrateTo="aweXpect">
+
+```csharp title="Before (xUnit)"
+double duration = // ...
+
+// highlight-next-line
+Assert.Equal(47.1, duration, 1);
+```
+
+```csharp title="After (aweXpect)"
+double duration = // ...
+
+// highlight-next-line
+Expect.That(Math.Round(duration, 1)).IsEqualTo(Math.Round(47.1, 1));
+```
+
+</ApplyFix>
+
 ## Strings
 
 | xUnit construct                             | Rewritten to                                     | Note                                         |
@@ -87,6 +141,28 @@ migration.
 | `Assert.EndsWith(expected, actual)`         | `Expect.That(actual).EndsWith(expected)`         | [empty](#empty-substrings-throw)             |
 | `Assert.Empty(actual)`                      | `Expect.That(actual).IsEmpty()`                  |                                              |
 | `Assert.NotEmpty(actual)`                   | `Expect.That(actual).IsNotEmpty()`               |                                              |
+
+<ApplyFix id="aweXpectM003" migrateTo="aweXpect">
+
+```csharp title="Before (xUnit)"
+string title = // ...
+
+// highlight-start
+Assert.Contains("Road", title);
+Assert.EndsWith("Road", title);
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+string title = // ...
+
+// highlight-start
+Expect.That(title).Contains("Road");
+Expect.That(title).EndsWith("Road");
+// highlight-end
+```
+
+</ApplyFix>
 
 ## Collections
 
@@ -101,6 +177,28 @@ migration.
 | `Assert.Empty(collection)`                      | `Expect.That(collection).IsEmpty()`                  |
 | `Assert.NotEmpty(collection)`                   | `Expect.That(collection).IsNotEmpty()`               |
 
+<ApplyFix id="aweXpectM003" migrateTo="aweXpect">
+
+```csharp title="Before (xUnit)"
+Dictionary<string, int> playCounts = // ...
+
+// highlight-start
+Assert.Contains("Something", playCounts);
+Assert.DoesNotContain("Yesterday", playCounts);
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+Dictionary<string, int> playCounts = // ...
+
+// highlight-start
+Expect.That(playCounts).ContainsKey("Something");
+Expect.That(playCounts).DoesNotContainKey("Yesterday");
+// highlight-end
+```
+
+</ApplyFix>
+
 ## Exceptions
 
 | xUnit construct                                                   | Rewritten to                                                  |
@@ -109,6 +207,28 @@ migration.
 | `Assert.Throws<T>(paramName, callback)` / `ThrowsAsync<T>(...)`   | `Expect.That(callback).ThrowsExactly<T>().WithParamName(paramName)` |
 | `Assert.Throws(typeof(T), callback)`                              | `Expect.That(callback).ThrowsExactly(typeof(T))`              |
 | `Assert.ThrowsAny<T>(callback)` / `ThrowsAnyAsync<T>(callback)`   | `Expect.That(callback).Throws<T>()`                           |
+
+<ApplyFix id="aweXpectM003" migrateTo="aweXpect">
+
+```csharp title="Before (xUnit)"
+Action play = // ...
+
+// highlight-start
+Assert.Throws<InvalidOperationException>(play);
+Assert.ThrowsAny<InvalidOperationException>(play);
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+Action play = // ...
+
+// highlight-start
+Expect.That(play).ThrowsExactly<InvalidOperationException>();
+Expect.That(play).Throws<InvalidOperationException>();
+// highlight-end
+```
+
+</ApplyFix>
 
 ## Types
 
@@ -124,6 +244,28 @@ migration.
 The non-generic overloads (`Assert.IsType(typeof(T), actual)` etc.) are migrated to the matching
 non-generic aweXpect form. An `exactMatch` argument that is not a `true` or `false` literal leaves the
 assertion for manual migration.
+
+<ApplyFix id="aweXpectM003" migrateTo="aweXpect">
+
+```csharp title="Before (xUnit)"
+Exception error = // ...
+
+// highlight-start
+Assert.IsType<ArgumentException>(error);
+Assert.IsType<ArgumentException>(error, exactMatch: false);
+// highlight-end
+```
+
+```csharp title="After (aweXpect)"
+Exception error = // ...
+
+// highlight-start
+Expect.That(error).IsExactly<ArgumentException>();
+Expect.That(error).Is<ArgumentException>();
+// highlight-end
+```
+
+</ApplyFix>
 
 ## Behavioral differences
 
