@@ -298,6 +298,30 @@ public static class TestCases
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"foo\";",
 			"subject.Should().BeEquivalentTo(expected, {0})",
 			"Expect.That(subject).IsEqualTo(expected).IgnoringCase()");
+		theoryData.AddWithBecause("string[] subject = [];string[] expected = [];",
+			"subject.Should().BeEquivalentTo(expected, {0})",
+			"Expect.That(subject).IsEqualTo(expected).InAnyOrder()");
+		theoryData.AddWithBecause("string[] subject = [];",
+			"subject.Should().BeEquivalentTo([\"Come Together\", \"Something\",], {0})",
+			"Expect.That(subject).IsEqualTo([\"Come Together\", \"Something\",]).InAnyOrder()");
+		theoryData.AddWithBecause("string[] subject = [];",
+			"subject.Should().BeEquivalentTo(\"Come Together\", \"Something\")",
+			"Expect.That(subject).IsEqualTo([\"Come Together\", \"Something\"]).InAnyOrder()");
+		theoryData.AddWithBecause("string[] subject = [];",
+			"subject.Should().BeEquivalentTo(\"Something\")",
+			"Expect.That(subject).IsEqualTo([\"Something\"]).InAnyOrder()");
+		theoryData.AddWithBecause("string[] subject = [];string[] unexpected = [];",
+			"subject.Should().NotBeEquivalentTo(unexpected, {0})",
+			"Expect.That(subject).IsNotEqualTo(unexpected).InAnyOrder()");
+		theoryData.AddWithBecause("IEnumerable<string> subject = [];string[] expected = [];",
+			"subject.Should().BeEquivalentTo(expected, {0})",
+			"Expect.That(subject).IsEqualTo(expected).InAnyOrder()");
+		theoryData.AddWithBecause("List<string> subject = [];string[] expected = [];",
+			"subject.Should().BeEquivalentTo(expected, {0})",
+			"Expect.That(subject).IsEqualTo(expected).InAnyOrder()");
+		theoryData.AddWithBecause("List<string> subject = [];List<string> expected = [];",
+			"subject.Should().BeEquivalentTo(expected, {0})",
+			"Expect.That(subject).IsEqualTo(expected).InAnyOrder()");
 		theoryData.AddWithBecause("IEnumerable<string> subject = [];string[] expected = [];",
 			"subject.Should().BeEquivalentTo(expected, o => o.WithStrictOrdering(), {0})",
 			"Expect.That(subject).IsEqualTo(expected)");
@@ -417,7 +441,9 @@ public static class TestCases
 		theoryData.Add(("TaskCompletionSource subject = new();",
 			"subject.Should().CompleteWithinAsync(TimeSpan.FromSeconds(3))"));
 		theoryData.Add(("string[] subject = [];",
-			"subject.Should().BeEquivalentTo(\"a\", \"b\")"));
+			"subject.Should().BeEquivalentTo()"));
+		theoryData.Add(("string[] subject = [];",
+			"subject.Should().BeEquivalentTo([])"));
 		theoryData.Add(("Type subject = typeof(string);",
 			"subject.Should().BeAssignableTo<IComparable>()"));
 		theoryData.Add(("Type subject = typeof(string);",
