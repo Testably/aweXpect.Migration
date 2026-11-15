@@ -132,6 +132,8 @@ order of nested collections, which `IgnoringCollectionOrder()` restores; the fix
 `using aweXpect.Equivalency;` for it when necessary. With `o => o.WithStrictOrdering()` the rewrite
 omits `InAnyOrder()` and `IgnoringCollectionOrder()`.
 
+Unlike a single string, the strings in a collection are compared case-sensitively, as in FluentAssertions. The expected strings can also be listed one by one: `BeEquivalentTo("Something", "Come Together")` rewrites to `IsEqualTo(["Something", "Come Together"]).InAnyOrder()`. Without any expected string (`BeEquivalentTo()` or `BeEquivalentTo([])`) no code fix is offered.
+
 For string subjects the `o => o...` options are translated as well. As in FluentAssertions, a string
 compared with options ignores case only when the options contain `IgnoringCase()`:
 
@@ -148,13 +150,13 @@ For structural comparisons, options other than `WithStrictOrdering()` and `Witho
 
 ```csharp title="Before (FluentAssertions)"
 string title = // ...
-int[] trackNumbers = // ...
-int[] expected = // ...
+string[] tracks = // ...
+string[] expected = // ...
 object album = // ...
 
 // highlight-start
 title.Should().BeEquivalentTo("abbey road");
-trackNumbers.Should().BeEquivalentTo(expected);
+tracks.Should().BeEquivalentTo(expected);
 album.Should().BeEquivalentTo(new { Title = "Abbey Road", Year = 1969 });
 // highlight-end
 ```
@@ -164,13 +166,13 @@ album.Should().BeEquivalentTo(new { Title = "Abbey Road", Year = 1969 });
 using aweXpect.Equivalency;
 
 string title = // ...
-int[] trackNumbers = // ...
-int[] expected = // ...
+string[] tracks = // ...
+string[] expected = // ...
 object album = // ...
 
 // highlight-start
 Expect.That(title).IsEqualTo("abbey road").IgnoringCase();
-Expect.That(trackNumbers).IsEqualTo(expected).InAnyOrder();
+Expect.That(tracks).IsEqualTo(expected).InAnyOrder();
 Expect.That(album).IsEquivalentTo(new { Title = "Abbey Road", Year = 1969 }, o => o.IgnoringCollectionOrder());
 // highlight-end
 ```

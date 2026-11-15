@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 
 #pragma warning disable S1192 // String literals should not be duplicated
 namespace aweXpect.Migration.Analyzers;
@@ -138,6 +139,12 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 	{
 		SeparatedSyntaxList<ArgumentSyntax> arguments = mainMethod.Arguments;
 		ArgumentSyntax? expected = arguments.ElementAtOrDefault(0);
+		if (expected?.Expression is CollectionExpressionSyntax { Elements.Count: 0, })
+		{
+			// An empty collection expression has no item type, so `IsEqualTo([])` would be ambiguous.
+			return null;
+		}
+
 		SemanticModel? semanticModel = await context.Document.GetSemanticModelAsync();
 		if (semanticModel?.GetSymbolInfo(mainMethod.Method).Symbol is not IMethodSymbol
 		    {
@@ -147,17 +154,16 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 			return null;
 		}
 
-		if (methodSymbol.OriginalDefinition.Parameters[0].IsParams)
-		{
-			// The rewrite would take the second expected item for the because argument.
-			return null;
-		}
-
 		ArgumentSyntax? options = GetOptionsArgument(methodSymbol, arguments);
 		int becauseIndex = options is null ? 1 : 2;
 		string optionsText = options?.ToString() ?? "";
 		ITypeSymbol parameterType = methodSymbol.OriginalDefinition.Parameters[0].Type;
 		string isEqualTo = negated ? "IsNotEqualTo" : "IsEqualTo";
+		if (IsExpandedParamsCall(semanticModel, mainMethod))
+		{
+			return await BeEquivalentToItems(context, methodSymbol, actual, methods, arguments, isEqualTo);
+		}
+
 		if (IsString(parameterType))
 		{
 			string stringSuffix = options is null ? ".IgnoringCase()" : GetStringOptionsSuffix(optionsText);
@@ -191,6 +197,29 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 			$".{(negated ? "IsNotEquivalentTo" : "IsEquivalentTo")}({expected}" +
 			(isStrictOrdering ? "" : ", " + IgnoringCollectionOrder(semanticModel, mainMethod)) + ")",
 			methods, becauseIndex);
+	}
+
+	/// <summary>
+	///     In the expanded form of an overload with only a <c>params</c> parameter every argument is an expected item and
+	///     none is the <c>because</c> argument, whereas the normal form passes the expected items as one collection.
+	/// </summary>
+	private static bool IsExpandedParamsCall(SemanticModel semanticModel, MethodDefinition mainMethod)
+		=> semanticModel.GetOperation(mainMethod.Method.Parent!) is IInvocationOperation invocation &&
+		   invocation.TargetMethod.Parameters[0].IsParams &&
+		   invocation.Arguments.Any(argument => argument.ArgumentKind == ArgumentKind.ParamArray);
+
+	private static async Task<string?> BeEquivalentToItems(CodeFixContext context, IMethodSymbol methodSymbol,
+		ExpressionSyntax actual, Stack<IDefinitionElement>? methods, SeparatedSyntaxList<ArgumentSyntax> arguments,
+		string isEqualTo)
+	{
+		if (arguments.Count == 0 ||
+		    !IsCollectionWithValueSemantics(methodSymbol, methodSymbol.OriginalDefinition.Parameters[0].Type))
+		{
+			return null;
+		}
+
+		return await ParseExpressionWithBecauseSupport(context, actual, arguments,
+			$".{isEqualTo}([{string.Join(", ", arguments)}]).InAnyOrder()", methods);
 	}
 
 	private static bool IsCollectionWithValueSemantics(IMethodSymbol methodSymbol, ITypeSymbol parameterType)
