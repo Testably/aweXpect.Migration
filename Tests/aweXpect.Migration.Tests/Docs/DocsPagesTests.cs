@@ -15,6 +15,75 @@ public sealed class DocsPagesTests
 			.Order(StringComparer.Ordinal);
 
 	[Test]
+	public async Task ApplyFix_Extract_ShouldFindTheBoxesOfAllPages()
+	{
+		int count = Pages().Sum(page => ExtractApplyFixBoxes(page).Count);
+
+		await That(count).IsGreaterThanOrEqualTo(6)
+			.Because("the check must not pass because it no longer finds the boxes");
+	}
+
+	[Test]
+	public async Task ApplyFix_Extract_ShouldReturnBothBlocksOfABoxWithoutHighlightComments()
+	{
+		string[] lines =
+		[
+			"```csharp",
+			"int outside = 0;",
+			"```",
+			"<ApplyFix id=\"aweXpectM002\" migrateTo=\"aweXpect\">",
+			"",
+			"```csharp title=\"Before\"",
+			"// highlight-next-line",
+			"int a = 1;",
+			"```",
+			"",
+			"```csharp no-compile title=\"After\"",
+			"// highlight-start",
+			"int b = 2;",
+			"// highlight-end",
+			"int c = 3;",
+			"```",
+			"",
+			"</ApplyFix>",
+			"```csharp",
+			"int d = 4;",
+			"```",
+		];
+
+		List<ApplyFixBox> boxes = ApplyFixBox.Extract("page.md", lines);
+
+		await That(boxes).HasSingle().Which.Satisfies(box =>
+			box.Page == "page.md" && box.Line == 4 && box.Id == "aweXpectM002" &&
+			box.Blocks.SequenceEqual(["int a = 1;", "int b = 2;\nint c = 3;",]));
+	}
+
+	[Test]
+	[MethodDataSource(nameof(Pages))]
+	public async Task ApplyFix_ShouldMatchTheCodeFix(string page)
+	{
+		List<string> mismatches = [];
+		foreach (ApplyFixBox box in ExtractApplyFixBoxes(page))
+		{
+			if (box.Blocks.Count != 2)
+			{
+				mismatches.Add($"{box.Page}({box.Line}): expected 2 csharp blocks, found {box.Blocks.Count}");
+				continue;
+			}
+
+			string expected = Normalize(SnippetCompiler.WrapAsDocument(box.Blocks[1]));
+			string actual = Normalize(await CodeFixApplier.Apply(box.Id, SnippetCompiler.WrapAsDocument(box.Blocks[0])));
+			if (expected != actual)
+			{
+				mismatches.Add($"{box.Page}({box.Line}): the after block differs from the code fix for {box.Id}." +
+				               $"\nExpected (page):\n{expected}\nActual (code fix):\n{actual}");
+			}
+		}
+
+		Fail.Unless(mismatches.Count == 0, string.Join(Environment.NewLine, mismatches));
+	}
+
+	[Test]
 	[MethodDataSource(nameof(Pages))]
 	public async Task CodeBlocks_ShouldCompile(string page)
 	{
@@ -114,6 +183,9 @@ public sealed class DocsPagesTests
 			.Because("an initializer that is only a `// ...` comment becomes `default!` and each block has its own locals");
 	}
 
+	private static List<ApplyFixBox> ExtractApplyFixBoxes(string page)
+		=> ApplyFixBox.Extract($"Docs/pages/{page}", File.ReadAllLines(Path.Combine(PagesDirectory, page)));
+
 	private static List<CodeBlock> ExtractCodeBlocks(string page)
 		=> CodeBlock.Extract($"Docs/pages/{page}", File.ReadAllLines(Path.Combine(PagesDirectory, page)));
 
@@ -129,4 +201,7 @@ public sealed class DocsPagesTests
 			? throw new DirectoryNotFoundException($"No Docs/pages above {AppContext.BaseDirectory}")
 			: Path.Combine(directory.FullName, "Docs", "pages");
 	}
+
+	private static string Normalize(string source)
+		=> string.Join("\n", source.Replace("\r\n", "\n").Split('\n').Select(line => line.TrimEnd())).TrimEnd();
 }

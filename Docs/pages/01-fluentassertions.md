@@ -23,10 +23,12 @@ subject.Should().Contain(1).And.Contain(2, "because foo");
 int[] subject = // ...
 
 // highlight-next-line
-await Expect.That(subject).Contains(1).And.Contains(2).Because("because foo");
+Expect.That(subject).Contains(1).And.Contains(2).Because("because foo");
 ```
 
 </ApplyFix>
+
+The examples show the code as the fix writes it; the `await` is added in a [second step](./00-index.md#how-it-works).
 
 The tables below are grouped by **target concept** (equality, containment and so on), not by the
 FluentAssertions documentation pages. Most of the basic assertions (`Be`, `NotBe`, `BeEmpty`, `Contain`,
@@ -272,7 +274,7 @@ callback.Should().Throw<ArgumentException>().WithMessage("foo*");
 Action callback = // ...
 
 // highlight-next-line
-await Expect.That(callback).Throws<ArgumentException>().WithMessage("foo*").AsWildcard().IgnoringCase().IgnoringNewlineStyle();
+Expect.That(callback).Throws<ArgumentException>().WithMessage("foo*").AsWildcard().IgnoringCase().IgnoringNewlineStyle();
 ```
 
 </ApplyFix>
@@ -318,7 +320,7 @@ surrounding signature is `Action` or `Func<T>`), the fixer wraps the rewritten e
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
-```csharp no-compile title="Before (FluentAssertions)"
+```csharp title="Before (FluentAssertions)"
 Action action = () => true.Should().BeTrue();
 ```
 
@@ -350,7 +352,7 @@ int expected = // ...
 int value = // ...
 
 // highlight-next-line
-await Expect.That(subject).IsEqualTo(expected).Because($"because the value is {value}");
+Expect.That(subject).IsEqualTo(expected).Because($"because the value is {value}");
 ```
 
 </ApplyFix>

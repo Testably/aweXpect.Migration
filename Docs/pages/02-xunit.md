@@ -29,12 +29,14 @@ string actual = // ...
 Action callback = // ...
 
 // highlight-start
-await Expect.That(actual).IsEqualTo(expected);
-await Expect.That(callback).ThrowsExactly<ArgumentException>();
+Expect.That(actual).IsEqualTo(expected);
+Expect.That(callback).ThrowsExactly<ArgumentException>();
 // highlight-end
 ```
 
 </ApplyFix>
+
+The examples show the code as the fix writes it; the `await` is added in a [second step](./00-index.md#how-it-works).
 
 A note in the last column marks a rewrite that behaves differently in some cases; it links to the matching entry under [Behavioral differences](#behavioral-differences).
 
