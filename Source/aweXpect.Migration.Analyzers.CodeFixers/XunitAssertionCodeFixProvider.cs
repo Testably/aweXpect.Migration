@@ -98,8 +98,7 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 					: $"Expect.That({expected}).IsFalse().Because({actual})"),
 			"Same" => SyntaxFactory.ParseExpression(
 				$"Expect.That({actual}).IsSameAs({expected})"),
-			"Distinct" => SyntaxFactory.ParseExpression(
-				$"Expect.That({actual}).All().AreUnique()"),
+			"Distinct" => Distinct(argumentListArguments),
 			"NotSame" => SyntaxFactory.ParseExpression(
 				$"Expect.That({actual}).IsNotSameAs({expected})"),
 			"IsAssignableFrom" => isGeneric
@@ -203,6 +202,19 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 
 		return SyntaxFactory.ParseExpression(
 			$"Expect.That({actual}).{(negated ? "DoesNotContain" : "Contains")}({expected})");
+	}
+
+	private static ExpressionSyntax? Distinct(SeparatedSyntaxList<ArgumentSyntax> argumentListArguments)
+	{
+		if (argumentListArguments.Any(argument => argument.NameColon is not null))
+		{
+			return null;
+		}
+
+		ExpressionSyntax collection = argumentListArguments[0].Expression;
+		return SyntaxFactory.ParseExpression(argumentListArguments.Count > 1
+			? $"Expect.That({collection}).All().AreUnique().Using({argumentListArguments[1].Expression})"
+			: $"Expect.That({collection}).All().AreUnique()");
 	}
 
 	/// <summary>
