@@ -17,14 +17,13 @@ Install aweXpect (the assertion library you are migrating *to*) into the test pr
 
 <PackageInstall package="aweXpect" />
 
-Then add `aweXpect.Migration` (the analyzers and code fixers) as a development dependency:
+Then add `aweXpect.Migration` (the analyzers and code fixes) as a development dependency:
 
 <PackageInstall package="aweXpect.Migration" developmentDependency />
 
-`aweXpect.Migration` ships only the analyzer and code fixer, no runtime code.
+`aweXpect.Migration` ships only the analyzers and code fixes, no runtime code.
 
-It is usually convenient to add the following global usings to the project so the rewritten code compiles without
-further edits:
+It is usually convenient to add the following global usings to the project so the rewritten code compiles without further edits:
 
 ```csharp
 global using System.Threading.Tasks;
@@ -37,35 +36,31 @@ The code fix writes `Expect.That(...)`. The hand-written examples under "Behavio
 
 After installing the package, every assertion of the source library is reported as a warning:
 
-| Diagnostic     | Source library   | Code fix title                         |
-|----------------|------------------|----------------------------------------|
-| `aweXpectM002` | FluentAssertions | *Migrate FluentAssertions to aweXpect* |
-| `aweXpectM003` | xUnit            | *Migrate xUnit assertion to aweXpect*  |
+| Diagnostic     | Source library   | Code fix title                                       |
+|----------------|------------------|------------------------------------------------------|
+| `aweXpectM002` | FluentAssertions | *Migration available: FluentAssertions assertion*    |
+| `aweXpectM003` | xUnit            | *Xunit assertions should be replaced with aweXpect*  |
 
-`aweXpectM002` is raised on every `.Should()` invocation defined under the `FluentAssertions` namespace (nested
-`.Should()` calls inside lambda arguments are intentionally skipped, so chains like
-`.Should().AllSatisfy(x => x.Should().BeGreaterThan(0))` are migrated as a single unit). `aweXpectM003` is raised on
-every method call on `Xunit.Assert`.
+`aweXpectM002` is raised on every `.Should()` invocation defined under the `FluentAssertions` namespace (nested `.Should()` calls inside lambda arguments are intentionally skipped, so chains like `.Should().AllSatisfy(x => x.Should().BeGreaterThan(0))` are migrated as a single unit). `aweXpectM003` is raised on every method call on `Xunit.Assert`.
 
-The code fix is offered only where the fixer knows a rewrite. An assertion without one, for example a chained call it
-does not recognize, keeps its warning and has to be migrated by hand.
+The code fix is offered only where it knows a rewrite. An assertion without one, for example a chained call it does not recognize, keeps its warning and has to be migrated by hand.
 
 A typical migration looks like this:
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
 ```csharp title="Before (FluentAssertions)"
-bool subject = // ...
+bool isReleased = // ...
 
 // highlight-next-line
-subject.Should().BeTrue();
+isReleased.Should().BeTrue();
 ```
 
 ```csharp title="After (aweXpect)"
-bool subject = // ...
+bool isReleased = // ...
 
 // highlight-next-line
-Expect.That(subject).IsTrue();
+Expect.That(isReleased).IsTrue();
 ```
 
 </ApplyFix>
@@ -73,30 +68,26 @@ Expect.That(subject).IsTrue();
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 
 ```csharp title="Before (xUnit)"
-string expected = // ...
-string actual = // ...
+string title = // ...
 
 // highlight-next-line
-Assert.Equal(expected, actual);
+Assert.Equal("Abbey Road", title);
 ```
 
 ```csharp title="After (aweXpect)"
-string expected = // ...
-string actual = // ...
+string title = // ...
 
 // highlight-next-line
-Expect.That(actual).IsEqualTo(expected);
+Expect.That(title).IsEqualTo("Abbey Road");
 ```
 
 </ApplyFix>
 
-Expectations in aweXpect only run when they are awaited. The rewritten expressions are therefore awaited in a second
-step, which the `aweXpect0001` analyzer that ships with `aweXpect` itself enforces and fixes.
+Expectations in aweXpect only run when they are awaited. The rewritten expressions are therefore awaited in a second step, which the `aweXpect0001` analyzer that ships with `aweXpect` itself enforces and fixes.
 
 ### In the IDE
 
-Apply "Fix all in solution" for `aweXpectM002` and `aweXpectM003` from your IDE (Visual Studio, Rider, VS Code with
-C# Dev Kit), then "Fix all" for `aweXpect0001` to add the missing `await` and mark the surrounding methods `async`.
+Apply "Fix all in solution" for `aweXpectM002` and `aweXpectM003` from your IDE (Visual Studio, Rider, VS Code with C# Dev Kit), then "Fix all" for `aweXpect0001` to add the missing `await` and mark the surrounding methods `async`.
 
 ### From the command line
 
@@ -112,8 +103,7 @@ dotnet format analyzers --diagnostics aweXpect0001 --severity warn
 
 ## Supported assertions
 
-The rewrites for each source library, and the cases in which the migrated expectation behaves differently, are listed
-on separate pages:
+The rewrites for each source library, and the cases in which the migrated expectation behaves differently, are listed on separate pages:
 
 - [Migrating from FluentAssertions](./01-fluentassertions.md)
 - [Migrating from xUnit](./02-xunit.md)
