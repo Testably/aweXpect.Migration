@@ -5,7 +5,7 @@ description: The cases in which a rewritten xUnit assertion passes or fails for 
 
 # Behavioral differences from xUnit
 
-Compared with xUnit 3, a few rewritten assertions pass or fail for different inputs than the original. These follow from the same rules as the [differences from FluentAssertions](./03-fluentassertions-differences.md).
+Compared with xUnit 3, a few rewritten assertions pass or fail for different inputs than the original. These follow from the same rules as the [differences from FluentAssertions](./02-fluentassertions-differences.md).
 
 ## Nested collections and sets
 

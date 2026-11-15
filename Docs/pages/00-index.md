@@ -37,7 +37,7 @@ After installing the package, every assertion of the source library is reported 
 | Diagnostic     | Source library                               | Code fix title                                      |
 |----------------|----------------------------------------------|-----------------------------------------------------|
 | `aweXpectM002` | [FluentAssertions](./01-fluentassertions.md) | *Migration available: FluentAssertions assertion*   |
-| `aweXpectM003` | [xUnit](./02-xunit.md)                       | *Xunit assertions should be replaced with aweXpect* |
+| `aweXpectM003` | [xUnit](./03-xunit.md)                       | *Xunit assertions should be replaced with aweXpect* |
 
 `aweXpectM002` is raised on every `.Should()` invocation defined under the `FluentAssertions` namespace (nested `.Should()` calls inside lambda arguments are intentionally skipped, so chains like `.Should().AllSatisfy(x => x.Should().BeGreaterThan(0))` are migrated as a single unit). `aweXpectM003` is raised on every method call on `Xunit.Assert`.
 
@@ -79,14 +79,14 @@ Expect.That(title).IsEqualTo("Abbey Road");
 
 </ApplyFix>
 
-The supported constructs of each source library are listed on [FluentAssertions](./01-fluentassertions.md) and [xUnit](./02-xunit.md). A few rewrites pass or fail for different inputs than the original; these cases are described on [Behavioral differences from FluentAssertions](./03-fluentassertions-differences.md) and [Behavioral differences from xUnit](./04-xunit-differences.md). Their examples use the shorter `That(...)` and assume `global using static aweXpect.Expect;` as well.
+The supported constructs of each source library are listed on [FluentAssertions](./01-fluentassertions.md) and [xUnit](./03-xunit.md). A few rewrites pass or fail for different inputs than the original; these cases are described on [Behavioral differences from FluentAssertions](./02-fluentassertions-differences.md) and [Behavioral differences from xUnit](./04-xunit-differences.md). Their examples use the shorter `That(...)` and assume `global using static aweXpect.Expect;` as well.
 
 ## Recommended workflow
 
 1. **Install the packages.** Add aweXpect and `aweXpect.Migration` to the test project (see [Installation](#installation)). Every assertion of FluentAssertions and xUnit is now reported as a warning.
 2. **Apply the code fixes** for `aweXpectM002` and `aweXpectM003` in your IDE or from the command line (see below).
 3. **Add the missing `await`.** Expectations in aweXpect only run when they are awaited. The `aweXpect0001` analyzer that ships with `aweXpect` itself reports the rewritten expressions, and its code fix adds the `await` and marks the surrounding methods `async`.
-4. **Address the call sites that need [manual review](#manual-review).** They keep their warning; migrate each one by hand. When a migrated test fails, check the behavioral differences from [FluentAssertions](./03-fluentassertions-differences.md) and [xUnit](./04-xunit-differences.md).
+4. **Address the call sites that need [manual review](#manual-review).** They keep their warning; migrate each one by hand. When a migrated test fails, check the behavioral differences from [FluentAssertions](./02-fluentassertions-differences.md) and [xUnit](./04-xunit-differences.md).
 5. **Remove the migration package** (see [Removing the package](#removing-the-package)).
 
 ### In the IDE
@@ -115,9 +115,9 @@ The code fix offers no rewrite when it cannot translate an assertion without los
 | FluentAssertions | A chained call without an aweXpect counterpart, such as `Where(...)`, and any call after `WithInnerException` | [Exceptions](./01-fluentassertions.md#exceptions)                                   |
 | FluentAssertions | `BeCloseTo` or `NotBeCloseTo` with a constant delta that does not fit the subject type                        | [Equality](./01-fluentassertions.md#equality)                                       |
 | FluentAssertions | Structural equivalency with options other than `WithStrictOrdering()` and `WithoutStrictOrdering()`           | [Equivalency](./01-fluentassertions.md#equivalency)                                 |
-| FluentAssertions | `BeAssignableTo` or `NotBeAssignableTo` on a `System.Type` subject                                            | [Assertions on a `Type`](./03-fluentassertions-differences.md#assertions-on-a-type) |
-| xUnit            | An additional argument such as a comparer, `ignoreCase: true` or a `StringComparison` on `Assert.Contains`    | [Equality](./02-xunit.md#equality)                                                  |
-| xUnit            | An `exactMatch` argument that is not a `true` or `false` literal                                              | [Types](./02-xunit.md#types)                                                        |
+| FluentAssertions | `BeAssignableTo` or `NotBeAssignableTo` on a `System.Type` subject                                            | [Assertions on a `Type`](./02-fluentassertions-differences.md#assertions-on-a-type) |
+| xUnit            | An additional argument such as a comparer, `ignoreCase: true` or a `StringComparison` on `Assert.Contains`    | [Equality](./03-xunit.md#equality)                                                  |
+| xUnit            | An `exactMatch` argument that is not a `true` or `false` literal                                              | [Types](./03-xunit.md#types)                                                        |
 
 Any other assertion that is not listed on the page of its source library keeps its warning as well.
 

@@ -37,7 +37,7 @@
 
 1. Add a branch to the method-name `switch` in `FluentAssertionsCodeFixProvider.GetNewExpressionFor` or `XunitAssertionCodeFixProvider.GetNewExpression`. Return `null` whenever the call cannot be translated without losing an argument or changing behaviour unnoticed.
 2. Add cases to the matching category in `TestCases.cs`, including the `because` variant for FluentAssertions. Add overloads that must stay unfixed to `TestCases.NoCodeFix` or a `..._ShouldNotOfferCodeFix` test.
-3. Add a row to the table in `Docs/pages/01-fluentassertions.md` or `Docs/pages/02-xunit.md`. If the aweXpect expectation behaves differently in some cases, link the row to a new entry in `Docs/pages/03-fluentassertions-differences.md` or `Docs/pages/04-xunit-differences.md`. A construct that stays without a fix belongs under "Manual review" in `Docs/pages/00-index.md`.
+3. Add a row to the table in `Docs/pages/01-fluentassertions.md` or `Docs/pages/03-xunit.md`. If the aweXpect expectation behaves differently in some cases, link the row to a new entry in `Docs/pages/02-fluentassertions-differences.md` or `Docs/pages/04-xunit-differences.md`. A construct that stays without a fix belongs under "Manual review" in `Docs/pages/00-index.md`.
 4. Run `dotnet test --project Tests/aweXpect.Migration.Tests`.
 
 ## Adding a rule for a new source library

@@ -60,20 +60,20 @@ The tables below are grouped by **target concept** (equality, containment and so
 
 A chain that continues on a second `.Should()`, e.g. after `.Which`, is left for manual migration, as is any call the code fix cannot translate without losing an argument (see [Manual review](./00-index.md#manual-review)).
 
-A note in the last column marks a rewrite that behaves differently in some cases; it links to the matching entry on [Behavioral differences from FluentAssertions](./03-fluentassertions-differences.md).
+A note in the last column marks a rewrite that behaves differently in some cases; it links to the matching entry on [Behavioral differences from FluentAssertions](./02-fluentassertions-differences.md).
 
 ## Equality
 
 | FluentAssertions construct                                  | Rewritten to                                                    | Note                                                                                                         |
 |-------------------------------------------------------------|-----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| `subject.Should().Be(expected)`                             | `Expect.That(subject).IsEqualTo(expected)`                      | [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds)                                                                             |
-| `subject.Should().NotBe(unexpected)`                        | `Expect.That(subject).IsNotEqualTo(unexpected)`                 | [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds)                                                                             |
-| `subject.Should().BeApproximately(expected, tolerance)`     | `Expect.That(subject).IsEqualTo(expected).Within(tolerance)`    | [NaN](./03-fluentassertions-differences.md#nan-is-an-ordinary-value)                                                                             |
-| `subject.Should().NotBeApproximately(expected, tolerance)`  | `Expect.That(subject).IsNotEqualTo(expected).Within(tolerance)` | [NaN](./03-fluentassertions-differences.md#nan-is-an-ordinary-value)                                                                             |
-| `subject.Should().BeCloseTo(expected, delta)`               | `Expect.That(subject).IsEqualTo(expected).Within(delta)`        | [integral deltas](./03-fluentassertions-differences.md#integral-tolerances), [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds)                                    |
-| `subject.Should().NotBeCloseTo(expected, delta)`            | `Expect.That(subject).IsNotEqualTo(expected).Within(delta)`     | [integral deltas](./03-fluentassertions-differences.md#integral-tolerances), [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds)                                    |
-| `subject.Should().BeOneOf(a, b, c)`                         | `Expect.That(subject).IsOneOf(a, b, c)`                         | [mixed number types](./03-fluentassertions-differences.md#numbers-of-different-types), [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds)                          |
-| `subject.Should().BeOneOf(collection)`                      | `Expect.That(subject).IsOneOf(collection)`                      | [mixed number types](./03-fluentassertions-differences.md#numbers-of-different-types), [empty expectations](./03-fluentassertions-differences.md#empty-expectations-throw), [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds) |
+| `subject.Should().Be(expected)`                             | `Expect.That(subject).IsEqualTo(expected)`                      | [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds)                                                                             |
+| `subject.Should().NotBe(unexpected)`                        | `Expect.That(subject).IsNotEqualTo(unexpected)`                 | [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds)                                                                             |
+| `subject.Should().BeApproximately(expected, tolerance)`     | `Expect.That(subject).IsEqualTo(expected).Within(tolerance)`    | [NaN](./02-fluentassertions-differences.md#nan-is-an-ordinary-value)                                                                             |
+| `subject.Should().NotBeApproximately(expected, tolerance)`  | `Expect.That(subject).IsNotEqualTo(expected).Within(tolerance)` | [NaN](./02-fluentassertions-differences.md#nan-is-an-ordinary-value)                                                                             |
+| `subject.Should().BeCloseTo(expected, delta)`               | `Expect.That(subject).IsEqualTo(expected).Within(delta)`        | [integral deltas](./02-fluentassertions-differences.md#integral-tolerances), [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds)                                    |
+| `subject.Should().NotBeCloseTo(expected, delta)`            | `Expect.That(subject).IsNotEqualTo(expected).Within(delta)`     | [integral deltas](./02-fluentassertions-differences.md#integral-tolerances), [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds)                                    |
+| `subject.Should().BeOneOf(a, b, c)`                         | `Expect.That(subject).IsOneOf(a, b, c)`                         | [mixed number types](./02-fluentassertions-differences.md#numbers-of-different-types), [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds)                          |
+| `subject.Should().BeOneOf(collection)`                      | `Expect.That(subject).IsOneOf(collection)`                      | [mixed number types](./02-fluentassertions-differences.md#numbers-of-different-types), [empty expectations](./02-fluentassertions-differences.md#empty-expectations-throw), [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds) |
 | `subject.Should().BeSameAs(expected)`                       | `Expect.That(subject).IsSameAs(expected)`                       |                                                                                                              |
 | `subject.Should().NotBeSameAs(unexpected)`                  | `Expect.That(subject).IsNotSameAs(unexpected)`                  |                                                                                                              |
 
@@ -129,7 +129,7 @@ For string subjects the `o => o...` options are translated as well. As in Fluent
 | `o => o.IgnoringTrailingWhitespace()` | `.IgnoringTrailingWhiteSpace()` |
 | `o => o.IgnoringNewlineStyle()`       | `.IgnoringNewlineStyle()`       |
 
-For structural comparisons, options other than `WithStrictOrdering()` and `WithoutStrictOrdering()` have no automatic translation, so no code fix is offered. `NotBeEquivalentTo` is translated symmetrically (`IsNotEqualTo` / `IsNotEquivalentTo`). See also [Structural equivalency](./03-fluentassertions-differences.md#structural-equivalency) under the behavioral differences.
+For structural comparisons, options other than `WithStrictOrdering()` and `WithoutStrictOrdering()` have no automatic translation, so no code fix is offered. `NotBeEquivalentTo` is translated symmetrically (`IsNotEqualTo` / `IsNotEquivalentTo`). See also [Structural equivalency](./02-fluentassertions-differences.md#structural-equivalency) under the behavioral differences.
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
@@ -171,7 +171,7 @@ Expect.That(album).IsEquivalentTo(new { Title = "Abbey Road", Year = 1969 }, o =
 | `subject.Should().BeNull()`                             | `Expect.That(subject).IsNull()`                  |                                                      |
 | `subject.Should().NotBeNull()`                          | `Expect.That(subject).IsNotNull()`               |                                                      |
 | `subject.Should().BeEmpty()`                            | `Expect.That(subject).IsEmpty()`                 |                                                      |
-| `subject.Should().NotBeEmpty()`                         | `Expect.That(subject).IsNotEmpty()`              | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null)  |
+| `subject.Should().NotBeEmpty()`                         | `Expect.That(subject).IsNotEmpty()`              | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null)  |
 | `subject.Should().BeNullOrEmpty()` *(string)*           | `Expect.That(subject).IsNullOrEmpty()`           |                                                      |
 | `subject.Should().BeNullOrEmpty()` *(collection)*       | `Expect.That(subject).IsNull().Or.IsEmpty()`     |                                                      |
 | `subject.Should().NotBeNullOrEmpty()` *(string)*        | `Expect.That(subject).IsNotNullOrEmpty()`        |                                                      |
@@ -228,7 +228,7 @@ The generic forms (`<T>`) and the non-generic `(typeof(T))` overloads are both s
 | `subject.Should().NotBeOfType<T>()`             | `Expect.That(subject).IsNotExactly<T>()`       |
 | `subject.Should().NotBeOfType(typeof(T))`       | `Expect.That(subject).IsNotExactly(typeof(T))` |
 
-On a `System.Type` subject, `BeAssignableTo` and `NotBeAssignableTo` are not rewritten; see [Assertions on a `Type`](./03-fluentassertions-differences.md#assertions-on-a-type).
+On a `System.Type` subject, `BeAssignableTo` and `NotBeAssignableTo` are not rewritten; see [Assertions on a `Type`](./02-fluentassertions-differences.md#assertions-on-a-type).
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
@@ -264,8 +264,8 @@ Expect.That(error).IsExactly<ArgumentNullException>();
 | `subject.Should().BeLessThan(expected)`                                       | `Expect.That(subject).IsLessThan(expected)`             |                                           |
 | `subject.Should().BeLessThanOrEqualTo(expected)`                              | `Expect.That(subject).IsLessThanOrEqualTo(expected)`    |                                           |
 | `subject.Should().BeLessOrEqualTo(expected)` *(legacy FluentAssertions 7)*    | `Expect.That(subject).IsLessThanOrEqualTo(expected)`    |                                           |
-| `subject.Should().BeInRange(low, high)`                                       | `Expect.That(subject).IsBetween(low).And(high)`         | [reversed ranges](./03-fluentassertions-differences.md#reversed-ranges-throw)   |
-| `subject.Should().NotBeInRange(low, high)`                                    | `Expect.That(subject).IsNotBetween(low).And(high)`      | [reversed ranges](./03-fluentassertions-differences.md#reversed-ranges-throw)   |
+| `subject.Should().BeInRange(low, high)`                                       | `Expect.That(subject).IsBetween(low).And(high)`         | [reversed ranges](./02-fluentassertions-differences.md#reversed-ranges-throw)   |
+| `subject.Should().NotBeInRange(low, high)`                                    | `Expect.That(subject).IsNotBetween(low).And(high)`      | [reversed ranges](./02-fluentassertions-differences.md#reversed-ranges-throw)   |
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
@@ -294,18 +294,18 @@ These cover both string and collection subjects; the code fix dispatches on the 
 | `subject.Should().Contain(expected)`                                    | `Expect.That(subject).Contains(expected)`                                                                 |                                                      |
 | `subject.Should().Contain(item).And.Contain(other)`                     | `Expect.That(subject).Contains(item).And.Contains(other)`                                                 |                                                      |
 | `subject.Should().Contain(collection)`                                  | `Expect.That(subject).Contains(collection).InAnyOrder().IgnoringDuplicates()`                             |                                                      |
-| `subject.Should().NotContain(unexpected)`                               | `Expect.That(subject).DoesNotContain(unexpected)`                                                         | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null)  |
-| `subject.Should().NotContain(collection)`                               | `Expect.That(subject).None().ComplyWith(x => x.IsOneOf(collection))`                                      | [mixed number types](./03-fluentassertions-differences.md#numbers-of-different-types)    |
-| `subject.Should().StartWith(expected)`                                  | `Expect.That(subject).StartsWith(expected)`                                                               | [empty expectations](./03-fluentassertions-differences.md#empty-expectations-throw)      |
-| `subject.Should().NotStartWith(unexpected)`                             | `Expect.That(subject).DoesNotStartWith(unexpected)`                                                       | [empty expectations](./03-fluentassertions-differences.md#empty-expectations-throw)      |
-| `subject.Should().EndWith(expected)`                                    | `Expect.That(subject).EndsWith(expected)`                                                                 | [empty expectations](./03-fluentassertions-differences.md#empty-expectations-throw)      |
-| `subject.Should().NotEndWith(unexpected)`                               | `Expect.That(subject).DoesNotEndWith(unexpected)`                                                         | [empty expectations](./03-fluentassertions-differences.md#empty-expectations-throw)      |
-| `subject.Should().ContainInOrder(collection)`                           | `Expect.That(subject).Contains(collection).IgnoringInterspersedItems()`                                   | [empty expectations](./03-fluentassertions-differences.md#empty-expectations-throw)      |
+| `subject.Should().NotContain(unexpected)`                               | `Expect.That(subject).DoesNotContain(unexpected)`                                                         | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null)  |
+| `subject.Should().NotContain(collection)`                               | `Expect.That(subject).None().ComplyWith(x => x.IsOneOf(collection))`                                      | [mixed number types](./02-fluentassertions-differences.md#numbers-of-different-types)    |
+| `subject.Should().StartWith(expected)`                                  | `Expect.That(subject).StartsWith(expected)`                                                               | [empty expectations](./02-fluentassertions-differences.md#empty-expectations-throw)      |
+| `subject.Should().NotStartWith(unexpected)`                             | `Expect.That(subject).DoesNotStartWith(unexpected)`                                                       | [empty expectations](./02-fluentassertions-differences.md#empty-expectations-throw)      |
+| `subject.Should().EndWith(expected)`                                    | `Expect.That(subject).EndsWith(expected)`                                                                 | [empty expectations](./02-fluentassertions-differences.md#empty-expectations-throw)      |
+| `subject.Should().NotEndWith(unexpected)`                               | `Expect.That(subject).DoesNotEndWith(unexpected)`                                                         | [empty expectations](./02-fluentassertions-differences.md#empty-expectations-throw)      |
+| `subject.Should().ContainInOrder(collection)`                           | `Expect.That(subject).Contains(collection).IgnoringInterspersedItems()`                                   | [empty expectations](./02-fluentassertions-differences.md#empty-expectations-throw)      |
 | `subject.Should().ContainInOrder(a, b, c)`                              | `Expect.That(subject).Contains([a, b, c]).IgnoringInterspersedItems()`                                    |                                                      |
-| `subject.Should().ContainInConsecutiveOrder(collection)`                | `Expect.That(subject).Contains(collection)`                                                               | [empty expectations](./03-fluentassertions-differences.md#empty-expectations-throw)      |
+| `subject.Should().ContainInConsecutiveOrder(collection)`                | `Expect.That(subject).Contains(collection)`                                                               | [empty expectations](./02-fluentassertions-differences.md#empty-expectations-throw)      |
 | `subject.Should().ContainInConsecutiveOrder(a, b, c)`                   | `Expect.That(subject).Contains([a, b, c])`                                                                |                                                      |
-| `subject.Should().ContainEquivalentOf(expected)`                        | `Expect.That(subject).Contains(expected).Equivalent(o => o.IgnoringCollectionOrder())`                    | [structural equivalency](./03-fluentassertions-differences.md#structural-equivalency)    |
-| `subject.Should().NotContainEquivalentOf(unexpected)`                   | `Expect.That(subject).DoesNotContain(unexpected).Equivalent(o => o.IgnoringCollectionOrder())`            | [structural equivalency](./03-fluentassertions-differences.md#structural-equivalency)    |
+| `subject.Should().ContainEquivalentOf(expected)`                        | `Expect.That(subject).Contains(expected).Equivalent(o => o.IgnoringCollectionOrder())`                    | [structural equivalency](./02-fluentassertions-differences.md#structural-equivalency)    |
+| `subject.Should().NotContainEquivalentOf(unexpected)`                   | `Expect.That(subject).DoesNotContain(unexpected).Equivalent(o => o.IgnoringCollectionOrder())`            | [structural equivalency](./02-fluentassertions-differences.md#structural-equivalency)    |
 | `subject.Should().BeSubsetOf(expected)`                                 | `Expect.That(subject).IsContainedIn(expected).InAnyOrder().IgnoringDuplicates()`                          |                                                      |
 | `subject.Should().NotBeSubsetOf(expected)`                              | `Expect.That(subject).IsNotContainedIn(expected).InAnyOrder()`                                            |                                                      |
 | `subject.Should().HaveCount(n)`                                         | `Expect.That(subject).HasCount(n)`                                                                        |                                                      |
@@ -319,7 +319,7 @@ These cover both string and collection subjects; the code fix dispatches on the 
 | `subject.Should().BeInDescendingOrder()`                                | `Expect.That(subject).IsInDescendingOrder()`                                                              |                                                      |
 | `subject.Should().NotBeInAscendingOrder()` / `NotBeInDescendingOrder()` | `Expect.That(subject).IsNotInAscendingOrder()` / `IsNotInDescendingOrder()`                               |                                                      |
 | `subject.Should().Match(predicate)` *(non-string subject)*              | `Expect.That(subject).Satisfies(predicate)`                                                               |                                                      |
-| `subject.Should().Match(pattern)` *(string subject)*                    | `Expect.That(subject).IsEqualTo(pattern).AsWildcard()`                                                    | [empty patterns](./03-fluentassertions-differences.md#empty-wildcard-patterns)           |
+| `subject.Should().Match(pattern)` *(string subject)*                    | `Expect.That(subject).IsEqualTo(pattern).AsWildcard()`                                                    | [empty patterns](./02-fluentassertions-differences.md#empty-wildcard-patterns)           |
 
 For items that are compared by value (see [Equivalency](#equivalency)), `ContainEquivalentOf` and `NotContainEquivalentOf` are rewritten to `Contains(expected)` and `DoesNotContain(unexpected)` without `Equivalent()`. With `o => o.WithStrictOrdering()` they use `Equivalent()` without options.
 
@@ -349,7 +349,7 @@ Expect.That(tracks).Contains(["Something", "Octopus's Garden"]).IgnoringInterspe
 
 ### Occurrence constraints on `Contain` (string subjects)
 
-`Should().Contain(expected, occurrence)` translates the full FluentAssertions occurrence family. The `Thrice` and `Times(n)` cases are emitted as numeric arguments, not as a chained `.Thrice()`. Occurrences are [counted without overlap](./03-fluentassertions-differences.md#occurrences-are-counted-without-overlap).
+`Should().Contain(expected, occurrence)` translates the full FluentAssertions occurrence family. The `Thrice` and `Times(n)` cases are emitted as numeric arguments, not as a chained `.Thrice()`. Occurrences are [counted without overlap](./02-fluentassertions-differences.md#occurrences-are-counted-without-overlap).
 
 | FluentAssertions occurrence | Appended to the rewrite | Note                                                |
 |-----------------------------|-------------------------|-----------------------------------------------------|
@@ -357,17 +357,17 @@ Expect.That(tracks).Contains(["Something", "Octopus's Garden"]).IgnoringInterspe
 | `AtLeast.Twice()`           | `.AtLeast().Twice()`    |                                                     |
 | `AtLeast.Thrice()`          | `.AtLeast(3)`           |                                                     |
 | `AtLeast.Times(n)`          | `.AtLeast(n)`           |                                                     |
-| `AtMost.Once()`             | `.AtMost().Once()`      | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null) |
-| `AtMost.Twice()`            | `.AtMost().Twice()`     | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null) |
-| `AtMost.Thrice()`           | `.AtMost(3)`            | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null) |
-| `AtMost.Times(n)`           | `.AtMost(n)`            | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null) |
+| `AtMost.Once()`             | `.AtMost().Once()`      | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null) |
+| `AtMost.Twice()`            | `.AtMost().Twice()`     | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null) |
+| `AtMost.Thrice()`           | `.AtMost(3)`            | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null) |
+| `AtMost.Times(n)`           | `.AtMost(n)`            | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null) |
 | `Exactly.Once()`            | `.Once()`               |                                                     |
 | `Exactly.Twice()`           | `.Twice()`              |                                                     |
 | `Exactly.Thrice()`          | `.Exactly(3)`           |                                                     |
 | `Exactly.Times(n)`          | `.Exactly(n)`           |                                                     |
-| `LessThan.Twice()`          | `.LessThan().Twice()`   | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null) |
-| `LessThan.Thrice()`         | `.LessThan(3)`          | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null) |
-| `LessThan.Times(n)`         | `.LessThan(n)`          | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null) |
+| `LessThan.Twice()`          | `.LessThan().Twice()`   | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null) |
+| `LessThan.Thrice()`         | `.LessThan(3)`          | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null) |
+| `LessThan.Times(n)`         | `.LessThan(n)`          | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null) |
 | `MoreThan.Once()`           | `.MoreThan().Once()`    |                                                     |
 | `MoreThan.Twice()`          | `.MoreThan().Twice()`   |                                                     |
 | `MoreThan.Thrice()`         | `.MoreThan(3)`          |                                                     |
@@ -403,9 +403,9 @@ In addition to the containment and ordering assertions above, these collection-s
 
 | FluentAssertions construct                                               | Rewritten to                                                                             | Note                                              |
 |--------------------------------------------------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------------|
-| `subject.Should().AllBeAssignableTo<T>()` / `(typeof(T))`                | `Expect.That(subject).All().Are<T>()` / `All().Are(typeof(T))`                           | [Type items](./03-fluentassertions-differences.md#type-instances-as-items)            |
-| `subject.Should().AllBeOfType<T>()` / `(typeof(T))`                      | `Expect.That(subject).All().AreExactly<T>()` / `All().AreExactly(typeof(T))`             | [Type items](./03-fluentassertions-differences.md#type-instances-as-items)            |
-| `subject.Should().AllBeEquivalentTo(expected)` *(non-string elements)*   | `Expect.That(subject).All().AreEquivalentTo(expected, o => o.IgnoringCollectionOrder())` | [structural equivalency](./03-fluentassertions-differences.md#structural-equivalency) |
+| `subject.Should().AllBeAssignableTo<T>()` / `(typeof(T))`                | `Expect.That(subject).All().Are<T>()` / `All().Are(typeof(T))`                           | [Type items](./02-fluentassertions-differences.md#type-instances-as-items)            |
+| `subject.Should().AllBeOfType<T>()` / `(typeof(T))`                      | `Expect.That(subject).All().AreExactly<T>()` / `All().AreExactly(typeof(T))`             | [Type items](./02-fluentassertions-differences.md#type-instances-as-items)            |
+| `subject.Should().AllBeEquivalentTo(expected)` *(non-string elements)*   | `Expect.That(subject).All().AreEquivalentTo(expected, o => o.IgnoringCollectionOrder())` | [structural equivalency](./02-fluentassertions-differences.md#structural-equivalency) |
 | `subject.Should().AllBeEquivalentTo(expected)` *(`IEnumerable<string>`)* | `Expect.That(subject).All().AreEqualTo(expected)`                                        |                                                   |
 
 For elements that are compared by value (see [Equivalency](#equivalency)), `AllBeEquivalentTo` is rewritten to `All().AreEqualTo(expected)`; with `o => o.WithStrictOrdering()` it is rewritten to `All().AreEquivalentTo(expected)` without the options lambda. For `IEnumerable<string>` collections, the `o => o...` options are translated as well:
@@ -446,8 +446,8 @@ Expect.That(errors).All().AreExactly<ArgumentException>();
 
 | FluentAssertions construct                                                    | Rewritten to                                                                           | Note                                              |
 |-------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|---------------------------------------------------|
-| `subject.Should().BeEquivalentTo(expected)` *(arbitrary object)*              | `Expect.That(subject).IsEquivalentTo(expected, o => o.IgnoringCollectionOrder())`      | [structural equivalency](./03-fluentassertions-differences.md#structural-equivalency) |
-| `subject.Should().NotBeEquivalentTo(unexpected)` *(arbitrary object)*         | `Expect.That(subject).IsNotEquivalentTo(unexpected, o => o.IgnoringCollectionOrder())` | [structural equivalency](./03-fluentassertions-differences.md#structural-equivalency) |
+| `subject.Should().BeEquivalentTo(expected)` *(arbitrary object)*              | `Expect.That(subject).IsEquivalentTo(expected, o => o.IgnoringCollectionOrder())`      | [structural equivalency](./02-fluentassertions-differences.md#structural-equivalency) |
+| `subject.Should().NotBeEquivalentTo(unexpected)` *(arbitrary object)*         | `Expect.That(subject).IsNotEquivalentTo(unexpected, o => o.IgnoringCollectionOrder())` | [structural equivalency](./02-fluentassertions-differences.md#structural-equivalency) |
 | `subject.Should().BeEquivalentTo(expected)` *(object compared by value)*      | `Expect.That(subject).IsEqualTo(expected)`                                             |                                                   |
 | `subject.Should().NotBeEquivalentTo(unexpected)` *(object compared by value)* | `Expect.That(subject).IsNotEqualTo(unexpected)`                                        |                                                   |
 
@@ -456,12 +456,12 @@ Expect.That(errors).All().AreExactly<ArgumentException>();
 | FluentAssertions construct                                       | Rewritten to                                                               | Note                                                       |
 |------------------------------------------------------------------|----------------------------------------------------------------------------|------------------------------------------------------------|
 | `callback.Should().NotThrow()` / `NotThrowAsync()`               | `Expect.That(callback).DoesNotThrow()`                                     |                                                            |
-| `callback.Should().NotThrow<T>()` / `NotThrowAsync<T>()`         | `Expect.That(callback).DoesNotThrow<T>()`                                  | [AggregateException](./03-fluentassertions-differences.md#aggregateexception-is-not-unwrapped) |
-| `callback.Should().Throw<T>()` / `ThrowAsync<T>()`               | `Expect.That(callback).Throws<T>()`                                        | [AggregateException](./03-fluentassertions-differences.md#aggregateexception-is-not-unwrapped) |
+| `callback.Should().NotThrow<T>()` / `NotThrowAsync<T>()`         | `Expect.That(callback).DoesNotThrow<T>()`                                  | [AggregateException](./02-fluentassertions-differences.md#aggregateexception-is-not-unwrapped) |
+| `callback.Should().Throw<T>()` / `ThrowAsync<T>()`               | `Expect.That(callback).Throws<T>()`                                        | [AggregateException](./02-fluentassertions-differences.md#aggregateexception-is-not-unwrapped) |
 | `callback.Should().ThrowExactly<T>()` / `ThrowExactlyAsync<T>()` | `Expect.That(callback).ThrowsExactly<T>()`                                 |                                                            |
-| `callback.Should().ThrowWithinAsync<T>(timeout)`                 | `Expect.That(callback).Throws<T>().Within(timeout)`                        | [AggregateException](./03-fluentassertions-differences.md#aggregateexception-is-not-unwrapped) |
-| `callback.Should().CompleteWithinAsync(timeout)`                 | `Expect.That(callback).ExecutesIn().AtMost(timeout)`                       | [canceled tasks](./03-fluentassertions-differences.md#canceled-tasks-do-not-complete)          |
-| `.WithMessage(pattern)`                                          | `.WithMessage(pattern).AsWildcard().IgnoringCase().IgnoringNewlineStyle()` | [empty patterns](./03-fluentassertions-differences.md#empty-wildcard-patterns)                 |
+| `callback.Should().ThrowWithinAsync<T>(timeout)`                 | `Expect.That(callback).Throws<T>().Within(timeout)`                        | [AggregateException](./02-fluentassertions-differences.md#aggregateexception-is-not-unwrapped) |
+| `callback.Should().CompleteWithinAsync(timeout)`                 | `Expect.That(callback).ExecutesIn().AtMost(timeout)`                       | [canceled tasks](./02-fluentassertions-differences.md#canceled-tasks-do-not-complete)          |
+| `.WithMessage(pattern)`                                          | `.WithMessage(pattern).AsWildcard().IgnoringCase().IgnoringNewlineStyle()` | [empty patterns](./02-fluentassertions-differences.md#empty-wildcard-patterns)                 |
 | `.WithInnerException<T>()` / `(typeof(T))`                       | `.WithInner<T>()` / `.WithInner(typeof(T))`                                |                                                            |
 | `.WithParameterName(name)`                                       | `.WithParamName(name)`                                                     |                                                            |
 
@@ -489,16 +489,16 @@ A chained call without an aweXpect counterpart, such as `Where(...)` or `WithInn
 
 | FluentAssertions construct                                                            | Rewritten to                                                            | Note                             |
 |---------------------------------------------------------------------------------------|-------------------------------------------------------------------------|----------------------------------|
-| `subject.Should().BeAfter(expected)`                                                  | `Expect.That(subject).IsAfter(expected)`                                | [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds) |
-| `subject.Should().BeOnOrAfter(expected)`                                              | `Expect.That(subject).IsOnOrAfter(expected)`                            | [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds) |
-| `subject.Should().BeBefore(expected)`                                                 | `Expect.That(subject).IsBefore(expected)`                               | [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds) |
-| `subject.Should().BeOnOrBefore(expected)`                                             | `Expect.That(subject).IsOnOrBefore(expected)`                           | [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds) |
-| `subject.Should().NotBeAfter(unexpected)` / `NotBeOnOrAfter(...)`                     | `Expect.That(subject).IsNotAfter(unexpected)` / `IsNotOnOrAfter(...)`   | [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds) |
-| `subject.Should().NotBeBefore(unexpected)` / `NotBeOnOrBefore(...)`                   | `Expect.That(subject).IsNotBefore(unexpected)` / `IsNotOnOrBefore(...)` | [DateTime kind](./03-fluentassertions-differences.md#datetime-kinds) |
+| `subject.Should().BeAfter(expected)`                                                  | `Expect.That(subject).IsAfter(expected)`                                | [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds) |
+| `subject.Should().BeOnOrAfter(expected)`                                              | `Expect.That(subject).IsOnOrAfter(expected)`                            | [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds) |
+| `subject.Should().BeBefore(expected)`                                                 | `Expect.That(subject).IsBefore(expected)`                               | [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds) |
+| `subject.Should().BeOnOrBefore(expected)`                                             | `Expect.That(subject).IsOnOrBefore(expected)`                           | [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds) |
+| `subject.Should().NotBeAfter(unexpected)` / `NotBeOnOrAfter(...)`                     | `Expect.That(subject).IsNotAfter(unexpected)` / `IsNotOnOrAfter(...)`   | [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds) |
+| `subject.Should().NotBeBefore(unexpected)` / `NotBeOnOrBefore(...)`                   | `Expect.That(subject).IsNotBefore(unexpected)` / `IsNotOnOrBefore(...)` | [DateTime kind](./02-fluentassertions-differences.md#datetime-kinds) |
 | `subject.Should().HaveYear(n)` (also `Month`/`Day`/`Hour`/`Minute`/`Second`/`Offset`) | `Expect.That(subject).HasYear().EqualTo(n)` (etc.)                      |                                  |
 | `subject.Should().NotHaveYear(n)` (and the other parts)                               | `Expect.That(subject).HasYear().NotEqualTo(n)` (etc.)                   |                                  |
 
-`Be`, `NotBe`, `BeCloseTo`, `NotBeCloseTo` and `BeOneOf` on dates are listed under [Equality](#equality); the [kind of a `DateTime`](./03-fluentassertions-differences.md#datetime-kinds) matters there as well.
+`Be`, `NotBe`, `BeCloseTo`, `NotBeCloseTo` and `BeOneOf` on dates are listed under [Equality](#equality); the [kind of a `DateTime`](./02-fluentassertions-differences.md#datetime-kinds) matters there as well.
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
@@ -529,11 +529,11 @@ Expect.That(releaseDate).HasMonth().NotEqualTo(1);
 | `subject.Should().BeDefined()`                 | `Expect.That(subject).IsDefined()`               |                                                      |
 | `subject.Should().NotBeDefined()`              | `Expect.That(subject).IsNotDefined()`            |                                                      |
 | `subject.Should().HaveFlag(flag)`              | `Expect.That(subject).HasFlag(flag)`             |                                                      |
-| `subject.Should().NotHaveFlag(flag)`           | `Expect.That(subject).DoesNotHaveFlag(flag)`     | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null)  |
+| `subject.Should().NotHaveFlag(flag)`           | `Expect.That(subject).DoesNotHaveFlag(flag)`     | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null)  |
 | `subject.Should().HaveValue()` (`Nullable<T>`) | `Expect.That(subject).IsNotNull()`               |                                                      |
 | `subject.Should().HaveValue(v)`                | `Expect.That(subject).HasValue(v)`               |                                                      |
 | `subject.Should().NotHaveValue()`              | `Expect.That(subject).IsNull()`                  |                                                      |
-| `subject.Should().NotHaveValue(v)`             | `Expect.That(subject).HasValue().NotEqualTo(v)`  | [null subjects](./03-fluentassertions-differences.md#negated-inspections-fail-for-null)  |
+| `subject.Should().NotHaveValue(v)`             | `Expect.That(subject).HasValue().NotEqualTo(v)`  | [null subjects](./02-fluentassertions-differences.md#negated-inspections-fail-for-null)  |
 
 ## Lambda assertions
 
@@ -581,4 +581,4 @@ Expect.That(trackCount).IsEqualTo(17).Because($"{album} has 17 tracks");
 
 ## Behavioral differences
 
-A few rewrites pass or fail for different inputs than the original FluentAssertions assertion, by a deliberate choice of aweXpect. Each case is listed with an example and a way to restore the original behavior on [Behavioral differences from FluentAssertions](./03-fluentassertions-differences.md).
+A few rewrites pass or fail for different inputs than the original FluentAssertions assertion, by a deliberate choice of aweXpect. Each case is listed with an example and a way to restore the original behavior on [Behavioral differences from FluentAssertions](./02-fluentassertions-differences.md).
