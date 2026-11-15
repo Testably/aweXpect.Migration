@@ -78,11 +78,11 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 		{
 			"Equal" => Equality(methodSymbol, argumentListArguments, actual, expected, false),
 			"NotEqual" => Equality(methodSymbol, argumentListArguments, actual, expected, true),
-			"Contains" => Contains(methodSymbol, argumentListArguments, actual, expected, false),
-			"DoesNotContain" => Contains(methodSymbol, argumentListArguments, actual, expected, true),
-			"StartsWith" => SyntaxFactory.ParseExpression(
+			"Contains" => Contains(semanticModel, methodSymbol, argumentListArguments, actual, expected, false),
+			"DoesNotContain" => Contains(semanticModel, methodSymbol, argumentListArguments, actual, expected, true),
+			"StartsWith" => WithStringComparison(semanticModel, methodSymbol, argumentListArguments,
 				$"Expect.That({actual}).StartsWith({expected})"),
-			"EndsWith" => SyntaxFactory.ParseExpression(
+			"EndsWith" => WithStringComparison(semanticModel, methodSymbol, argumentListArguments,
 				$"Expect.That({actual}).EndsWith({expected})"),
 			"NotNull" => SyntaxFactory.ParseExpression(
 				$"Expect.That({actual}).IsNotNull()"),
@@ -174,6 +174,7 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 	}
 
 	private static ExpressionSyntax? Contains(
+		SemanticModel? semanticModel,
 		IMethodSymbol? methodSymbol,
 		SeparatedSyntaxList<ArgumentSyntax> argumentListArguments,
 		ArgumentSyntax? actual,
@@ -182,7 +183,8 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 	{
 		if (argumentListArguments.Count > 2)
 		{
-			return null;
+			return WithStringComparison(semanticModel, methodSymbol, argumentListArguments,
+				$"Expect.That({actual}).{(negated ? "DoesNotContain" : "Contains")}({expected})");
 		}
 
 		if (IsDictionaryOverload(methodSymbol))
@@ -201,6 +203,39 @@ public class XunitAssertionCodeFixProvider() : AssertionCodeFixProvider(Rules.Xu
 
 		return SyntaxFactory.ParseExpression(
 			$"Expect.That({actual}).{(negated ? "DoesNotContain" : "Contains")}({expected})");
+	}
+
+	/// <summary>
+	///     Appends the option for the <see cref="StringComparison" /> of a string overload, which aweXpect only expresses
+	///     exactly for a constant <see cref="StringComparison.Ordinal" /> or <see cref="StringComparison.OrdinalIgnoreCase" />:
+	///     a culture-sensitive comparison may match a prefix, suffix or substring of a different length.
+	/// </summary>
+	private static ExpressionSyntax? WithStringComparison(SemanticModel? semanticModel, IMethodSymbol? methodSymbol,
+		SeparatedSyntaxList<ArgumentSyntax> argumentListArguments, string expression)
+	{
+		if (argumentListArguments.Count < 3)
+		{
+			return SyntaxFactory.ParseExpression(expression);
+		}
+
+		if (semanticModel is null ||
+		    methodSymbol is not { Parameters.Length: 3, } ||
+		    methodSymbol.Parameters[0].Type.SpecialType != SpecialType.System_String ||
+		    methodSymbol.Parameters[2].Type.Name != nameof(StringComparison) ||
+		    argumentListArguments[0].NameColon is not null ||
+		    argumentListArguments[1].NameColon is not null ||
+		    semanticModel.GetConstantValue(argumentListArguments[2].Expression) is not
+			    { HasValue: true, Value: int comparison, })
+		{
+			return null;
+		}
+
+		return (StringComparison)comparison switch
+		{
+			StringComparison.Ordinal => SyntaxFactory.ParseExpression(expression),
+			StringComparison.OrdinalIgnoreCase => SyntaxFactory.ParseExpression(expression + ".IgnoringCase()"),
+			_ => null,
+		};
 	}
 
 	/// <summary>

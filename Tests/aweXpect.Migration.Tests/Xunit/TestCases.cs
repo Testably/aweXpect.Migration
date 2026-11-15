@@ -167,10 +167,31 @@ public static class TestCases
 			"Assert.DoesNotContain(\"oo\", \"foo\")",
 			"Expect.That(\"foo\").DoesNotContain(\"oo\")");
 		theoryData.AddTestCase("",
+			"Assert.Contains(\"OO\", \"foo\", StringComparison.OrdinalIgnoreCase)",
+			"Expect.That(\"foo\").Contains(\"OO\").IgnoringCase()");
+		theoryData.AddTestCase("",
+			"Assert.Contains(\"oo\", \"foo\", StringComparison.Ordinal)",
+			"Expect.That(\"foo\").Contains(\"oo\")");
+		theoryData.AddTestCase("",
+			"Assert.DoesNotContain(\"OO\", \"foo\", StringComparison.OrdinalIgnoreCase)",
+			"Expect.That(\"foo\").DoesNotContain(\"OO\").IgnoringCase()");
+		theoryData.AddTestCase("",
 			"Assert.StartsWith(\"fo\", \"foo\")",
 			"Expect.That(\"foo\").StartsWith(\"fo\")");
 		theoryData.AddTestCase("",
+			"Assert.StartsWith(\"FO\", \"foo\", StringComparison.OrdinalIgnoreCase)",
+			"Expect.That(\"foo\").StartsWith(\"FO\").IgnoringCase()");
+		theoryData.AddTestCase("",
+			"Assert.StartsWith(\"fo\", \"foo\", StringComparison.Ordinal)",
+			"Expect.That(\"foo\").StartsWith(\"fo\")");
+		theoryData.AddTestCase("",
 			"Assert.EndsWith(\"oo\", \"foo\")",
+			"Expect.That(\"foo\").EndsWith(\"oo\")");
+		theoryData.AddTestCase("",
+			"Assert.EndsWith(\"OO\", \"foo\", comparisonType: StringComparison.OrdinalIgnoreCase)",
+			"Expect.That(\"foo\").EndsWith(\"OO\").IgnoringCase()");
+		theoryData.AddTestCase("const StringComparison comparison = StringComparison.Ordinal;",
+			"Assert.EndsWith(\"oo\", \"foo\", comparison)",
 			"Expect.That(\"foo\").EndsWith(\"oo\")");
 		theoryData.AddTestCase("",
 			"Assert.Empty(\"foo\")",
