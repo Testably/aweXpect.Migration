@@ -30,22 +30,18 @@ global using System.Threading.Tasks;
 global using aweXpect;
 ```
 
-The code fix writes `Expect.That(...)`. The hand-written examples under "Behavioral differences" use the shorter `That(...)` and assume `global using static aweXpect.Expect;` as well.
-
 ## How it works
 
 After installing the package, every assertion of the source library is reported as a warning:
 
-| Diagnostic     | Source library   | Code fix title                                       |
-|----------------|------------------|------------------------------------------------------|
-| `aweXpectM002` | FluentAssertions | *Migration available: FluentAssertions assertion*    |
-| `aweXpectM003` | xUnit            | *Xunit assertions should be replaced with aweXpect*  |
+| Diagnostic     | Source library                               | Code fix title                                      |
+|----------------|----------------------------------------------|-----------------------------------------------------|
+| `aweXpectM002` | [FluentAssertions](./01-fluentassertions.md) | *Migration available: FluentAssertions assertion*   |
+| `aweXpectM003` | [xUnit](./03-xunit.md)                       | *Xunit assertions should be replaced with aweXpect* |
 
 `aweXpectM002` is raised on every `.Should()` invocation defined under the `FluentAssertions` namespace (nested `.Should()` calls inside lambda arguments are intentionally skipped, so chains like `.Should().AllSatisfy(x => x.Should().BeGreaterThan(0))` are migrated as a single unit). `aweXpectM003` is raised on every method call on `Xunit.Assert`.
 
-The code fix is offered only where it knows a rewrite. An assertion without one, for example a chained call it does not recognize, keeps its warning and has to be migrated by hand.
-
-A typical migration looks like this:
+The code fix is offered only where it knows a rewrite. An assertion without one keeps its warning and has to be migrated by hand (see [Manual review](#manual-review)).
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
@@ -83,7 +79,15 @@ Expect.That(title).IsEqualTo("Abbey Road");
 
 </ApplyFix>
 
-Expectations in aweXpect only run when they are awaited. The rewritten expressions are therefore awaited in a second step, which the `aweXpect0001` analyzer that ships with `aweXpect` itself enforces and fixes.
+The supported constructs of each source library are listed on [FluentAssertions](./01-fluentassertions.md) and [xUnit](./03-xunit.md). A few rewrites pass or fail for different inputs than the original; these cases are described on [Behavioral differences from FluentAssertions](./02-fluentassertions-differences.md) and [Behavioral differences from xUnit](./04-xunit-differences.md). Their examples use the shorter `That(...)` and assume `global using static aweXpect.Expect;` as well.
+
+## Recommended workflow
+
+1. **Install the packages.** Add aweXpect and `aweXpect.Migration` to the test project (see [Installation](#installation)). Every assertion of FluentAssertions and xUnit is now reported as a warning.
+2. **Apply the code fixes** for `aweXpectM002` and `aweXpectM003` in your IDE or from the command line (see below).
+3. **Add the missing `await`.** Expectations in aweXpect only run when they are awaited. The `aweXpect0001` analyzer that ships with `aweXpect` itself reports the rewritten expressions, and its code fix adds the `await` and marks the surrounding methods `async`.
+4. **Address the call sites that need [manual review](#manual-review).** They keep their warning; migrate each one by hand. When a migrated test fails, check the behavioral differences from [FluentAssertions](./02-fluentassertions-differences.md) and [xUnit](./04-xunit-differences.md).
+5. **Remove the migration package** (see [Removing the package](#removing-the-package)).
 
 ### In the IDE
 
@@ -101,19 +105,49 @@ dotnet format analyzers --diagnostics aweXpectM002 aweXpectM003 --severity warn
 dotnet format analyzers --diagnostics aweXpect0001 --severity warn
 ```
 
-## Supported assertions
+## Manual review
 
-The rewrites for each source library, and the cases in which the migrated expectation behaves differently, are listed on separate pages:
+The code fix offers no rewrite when it cannot translate an assertion without losing an argument or changing its meaning. These call sites keep their warning; migrate each one by hand:
 
-- [Migrating from FluentAssertions](./01-fluentassertions.md)
-- [Migrating from xUnit](./02-xunit.md)
+| Source library   | Construct                                                                                                     | Details                                                                             |
+|------------------|---------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| FluentAssertions | A chain that continues on a second `.Should()`, for example after `.Which`                                    | [FluentAssertions](./01-fluentassertions.md)                                        |
+| FluentAssertions | A chained call without an aweXpect counterpart, such as `Where(...)`, and any call after `WithInnerException` | [Exceptions](./01-fluentassertions.md#exceptions)                                   |
+| FluentAssertions | `BeCloseTo` or `NotBeCloseTo` with a constant delta that does not fit the subject type                        | [Equality](./01-fluentassertions.md#equality)                                       |
+| FluentAssertions | Structural equivalency with options other than `WithStrictOrdering()` and `WithoutStrictOrdering()`           | [Equivalency](./01-fluentassertions.md#equivalency)                                 |
+| FluentAssertions | `BeAssignableTo` or `NotBeAssignableTo` on a `System.Type` subject                                            | [Assertions on a `Type`](./02-fluentassertions-differences.md#assertions-on-a-type) |
+| xUnit            | An additional argument such as a comparer, `ignoreCase: true` or a `StringComparison` on `Assert.Contains`    | [Equality](./03-xunit.md#equality)                                                  |
+| xUnit            | An `exactMatch` argument that is not a `true` or `false` literal                                              | [Types](./03-xunit.md#types)                                                        |
 
-## Removing `aweXpect.Migration` again
+Any other assertion that is not listed on the page of its source library keeps its warning as well.
 
-Once the warnings in a project have been resolved, drop the analyzer reference:
+## Suppressing the diagnostic
+
+If you choose not to migrate a particular assertion, suppress the diagnostic per call site with the standard mechanisms:
+
+```csharp
+bool isReleased = // ...
+
+#pragma warning disable aweXpectM002
+isReleased.Should().BeTrue();
+#pragma warning restore aweXpectM002
+```
+
+or via an `.editorconfig` entry scoped to a file or folder:
+
+```text title=".editorconfig"
+[**/Legacy/**.cs]
+dotnet_diagnostic.aweXpectM002.severity = none
+dotnet_diagnostic.aweXpectM003.severity = none
+```
+
+## Removing the package
+
+Once the warnings in a project have been resolved, drop the analyzer reference, and FluentAssertions if no test uses it any longer:
 
 ```shell
 dotnet remove package aweXpect.Migration
+dotnet remove package FluentAssertions
 ```
 
-`aweXpect` itself stays in the project; that is the assertion library the tests now depend on.
+`aweXpect` itself stays in the project; that is the assertion library the tests now depend on. xUnit stays as well when it runs the tests.

@@ -37,7 +37,7 @@
 
 1. Add a branch to the method-name `switch` in `FluentAssertionsCodeFixProvider.GetNewExpressionFor` or `XunitAssertionCodeFixProvider.GetNewExpression`. Return `null` whenever the call cannot be translated without losing an argument or changing behaviour unnoticed.
 2. Add cases to the matching category in `TestCases.cs`, including the `because` variant for FluentAssertions. Add overloads that must stay unfixed to `TestCases.NoCodeFix` or a `..._ShouldNotOfferCodeFix` test.
-3. Add a row to the table in `Docs/pages/01-fluentassertions.md` or `Docs/pages/02-xunit.md`. If the aweXpect expectation behaves differently in some cases, link the row to a new entry under "Behavioral differences".
+3. Add a row to the table in `Docs/pages/01-fluentassertions.md` or `Docs/pages/03-xunit.md`. If the aweXpect expectation behaves differently in some cases, link the row to a new entry in `Docs/pages/02-fluentassertions-differences.md` or `Docs/pages/04-xunit-differences.md`. A construct that stays without a fix belongs under "Manual review" in `Docs/pages/00-index.md`.
 4. Run `dotnet test --project Tests/aweXpect.Migration.Tests`.
 
 ## Adding a rule for a new source library
@@ -46,4 +46,4 @@
 2. Add a `DiagnosticAnalyzer` in `Source/aweXpect.Migration.Analyzers` that follows the existing analyzers: `[DiagnosticAnalyzer(LanguageNames.CSharp)]`, generated code excluded, concurrent execution, an operation action on `OperationKind.Invocation`.
 3. Add a fixer in `Source/aweXpect.Migration.Analyzers.CodeFixers` that derives from `AssertionCodeFixProvider` with `[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(...))]` and `[Shared]`.
 4. Add the library package to the `ReferenceAssemblies` in `Tests/aweXpect.Migration.Tests/Verifiers/` and create a test folder with analyzer tests, code fix tests and `TestCases.cs`.
-5. Add a page under `Docs/pages/`, then add the diagnostic to the README table, the `dotnet format` command and the "Supported assertions" list.
+5. Add a page under `Docs/pages/` (and a page for its behavioral differences), add the diagnostic to the table under "How it works" in `Docs/pages/00-index.md`, then add it to the README table, the `dotnet format` command and the "Supported assertions" list.
