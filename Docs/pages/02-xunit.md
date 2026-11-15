@@ -6,9 +6,7 @@ import ApplyFix from '@site/src/components/ApplyFix';
 
 # xUnit
 
-The fixer rewrites each `Xunit.Assert.*` call into the corresponding
-`Expect.That(actual).<Assertion>(expected)` form. The argument order in xUnit
-(`Assert.Equal(expected, actual)`) is swapped to match the "actual first" convention of aweXpect.
+The code fix rewrites each `Xunit.Assert.*` call into the corresponding `Expect.That(actual).<Assertion>(expected)` form. The argument order in xUnit (`Assert.Equal(expected, actual)`) is swapped to match the "actual first" convention of aweXpect.
 
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 
@@ -58,7 +56,7 @@ Expect.That(play).ThrowsExactly<InvalidOperationException>();
 
 </ApplyFix>
 
-The examples show the code as the fix writes it; the `await` is added in a [second step](./00-index.md#how-it-works).
+The examples show the code as the code fix writes it; the `await` is added in a [second step](./00-index.md#how-it-works).
 
 A note in the last column marks a rewrite that behaves differently in some cases; it links to the matching entry under [Behavioral differences](#behavioral-differences).
 
@@ -98,20 +96,16 @@ Fail.Test("The album has no tracks");
 
 ## Equality
 
-| xUnit construct                                                          | Rewritten to                                                                          | Note                                                                                  |
-|--------------------------------------------------------------------------|---------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
-| `Assert.Equal(expected, actual)`                                         | `Expect.That(actual).IsEqualTo(expected)`                                             | [collections](#nested-collections-and-sets), [numbers](#numbers-of-different-types), [kind](#datetime-kinds) |
-| `Assert.NotEqual(expected, actual)`                                      | `Expect.That(actual).IsNotEqualTo(expected)`                                          |                                                                                       |
-| `Assert.Equal(expected, actual, tolerance)` (double / float / TimeSpan)  | `Expect.That(actual).IsEqualTo(expected).Within(tolerance)`                           | [kind](#datetime-kinds)                                                               |
-| `Assert.NotEqual(expected, actual, tolerance)` (double / float)          | `Expect.That(actual).IsNotEqualTo(expected).Within(tolerance)`                        |                                                                                       |
-| `Assert.Equal(expected, actual, precision)` (double / float / decimal)   | `Expect.That(Math.Round(actual, precision)).IsEqualTo(Math.Round(expected, precision))`   |                                                                                   |
-| `Assert.NotEqual(expected, actual, precision)` (double / float / decimal) | `Expect.That(Math.Round(actual, precision)).IsNotEqualTo(Math.Round(expected, precision))` |                                                                                 |
+| xUnit construct                                                           | Rewritten to                                                                               | Note                                                                                                                    |
+|---------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `Assert.Equal(expected, actual)`                                          | `Expect.That(actual).IsEqualTo(expected)`                                                  | [nested collections](#nested-collections-and-sets), [mixed number types](#numbers-of-different-types), [DateTime kind](#datetime-kinds) |
+| `Assert.NotEqual(expected, actual)`                                       | `Expect.That(actual).IsNotEqualTo(expected)`                                               |                                                                                                                         |
+| `Assert.Equal(expected, actual, tolerance)` (double / float / TimeSpan)   | `Expect.That(actual).IsEqualTo(expected).Within(tolerance)`                                | [DateTime kind](#datetime-kinds)                                                                                        |
+| `Assert.NotEqual(expected, actual, tolerance)` (double / float)           | `Expect.That(actual).IsNotEqualTo(expected).Within(tolerance)`                             |                                                                                                                         |
+| `Assert.Equal(expected, actual, precision)` (double / float / decimal)    | `Expect.That(Math.Round(actual, precision)).IsEqualTo(Math.Round(expected, precision))`    |                                                                                                                         |
+| `Assert.NotEqual(expected, actual, precision)` (double / float / decimal) | `Expect.That(Math.Round(actual, precision)).IsNotEqualTo(Math.Round(expected, precision))` |                                                                                                                         |
 
-The precision of xUnit rounds both values to the given number of decimal places, which no tolerance can
-express, so the rewrite rounds them the same way. A `MidpointRounding` argument is passed on to
-`Math.Round`, and a using for `System` is added when necessary. Any other additional argument, such as a
-comparer, `ignoreCase: true` or a `StringComparison` on `Assert.Contains`, leaves the assertion for manual
-migration.
+The precision of xUnit rounds both values to the given number of decimal places, which no tolerance can express, so the rewrite rounds them the same way. A `MidpointRounding` argument is passed on to `Math.Round`, and a using for `System` is added when necessary. Any other additional argument, such as a comparer, `ignoreCase: true` or a `StringComparison` on `Assert.Contains`, leaves the assertion for manual migration.
 
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 
@@ -133,14 +127,14 @@ Expect.That(Math.Round(duration, 1)).IsEqualTo(Math.Round(47.1, 1));
 
 ## Strings
 
-| xUnit construct                             | Rewritten to                                     | Note                                         |
-|---------------------------------------------|--------------------------------------------------|----------------------------------------------|
-| `Assert.Contains(expected, actual)`         | `Expect.That(actual).Contains(expected)`         | [empty](#empty-substrings-throw)             |
-| `Assert.DoesNotContain(unexpected, actual)` | `Expect.That(actual).DoesNotContain(unexpected)` | [null](#negated-inspections-fail-for-null)   |
-| `Assert.StartsWith(expected, actual)`       | `Expect.That(actual).StartsWith(expected)`       | [empty](#empty-substrings-throw)             |
-| `Assert.EndsWith(expected, actual)`         | `Expect.That(actual).EndsWith(expected)`         | [empty](#empty-substrings-throw)             |
-| `Assert.Empty(actual)`                      | `Expect.That(actual).IsEmpty()`                  |                                              |
-| `Assert.NotEmpty(actual)`                   | `Expect.That(actual).IsNotEmpty()`               |                                              |
+| xUnit construct                             | Rewritten to                                     | Note                                                 |
+|---------------------------------------------|--------------------------------------------------|------------------------------------------------------|
+| `Assert.Contains(expected, actual)`         | `Expect.That(actual).Contains(expected)`         | [empty substrings](#empty-substrings-throw)          |
+| `Assert.DoesNotContain(unexpected, actual)` | `Expect.That(actual).DoesNotContain(unexpected)` | [null subjects](#negated-inspections-fail-for-null)  |
+| `Assert.StartsWith(expected, actual)`       | `Expect.That(actual).StartsWith(expected)`       | [empty substrings](#empty-substrings-throw)          |
+| `Assert.EndsWith(expected, actual)`         | `Expect.That(actual).EndsWith(expected)`         | [empty substrings](#empty-substrings-throw)          |
+| `Assert.Empty(actual)`                      | `Expect.That(actual).IsEmpty()`                  |                                                      |
+| `Assert.NotEmpty(actual)`                   | `Expect.That(actual).IsNotEmpty()`               |                                                      |
 
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 
@@ -201,12 +195,12 @@ Expect.That(playCounts).DoesNotContainKey("Yesterday");
 
 ## Exceptions
 
-| xUnit construct                                                   | Rewritten to                                                  |
-|-------------------------------------------------------------------|---------------------------------------------------------------|
-| `Assert.Throws<T>(callback)` / `ThrowsAsync<T>(callback)`         | `Expect.That(callback).ThrowsExactly<T>()`                    |
+| xUnit construct                                                   | Rewritten to                                                        |
+|-------------------------------------------------------------------|---------------------------------------------------------------------|
+| `Assert.Throws<T>(callback)` / `ThrowsAsync<T>(callback)`         | `Expect.That(callback).ThrowsExactly<T>()`                          |
 | `Assert.Throws<T>(paramName, callback)` / `ThrowsAsync<T>(...)`   | `Expect.That(callback).ThrowsExactly<T>().WithParamName(paramName)` |
-| `Assert.Throws(typeof(T), callback)`                              | `Expect.That(callback).ThrowsExactly(typeof(T))`              |
-| `Assert.ThrowsAny<T>(callback)` / `ThrowsAnyAsync<T>(callback)`   | `Expect.That(callback).Throws<T>()`                           |
+| `Assert.Throws(typeof(T), callback)`                              | `Expect.That(callback).ThrowsExactly(typeof(T))`                    |
+| `Assert.ThrowsAny<T>(callback)` / `ThrowsAnyAsync<T>(callback)`   | `Expect.That(callback).Throws<T>()`                                 |
 
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 
@@ -232,18 +226,16 @@ Expect.That(play).Throws<InvalidOperationException>();
 
 ## Types
 
-| xUnit construct                                      | Rewritten to                            | Note                                        |
-|------------------------------------------------------|-----------------------------------------|---------------------------------------------|
-| `Assert.IsAssignableFrom<T>(actual)`                 | `Expect.That(actual).Is<T>()`           |                                             |
-| `Assert.IsNotAssignableFrom<T>(actual)`              | `Expect.That(actual).IsNot<T>()`        | [null](#negated-inspections-fail-for-null)  |
-| `Assert.IsType<T>(actual)`                           | `Expect.That(actual).IsExactly<T>()`    |                                             |
-| `Assert.IsType<T>(actual, exactMatch: false)`        | `Expect.That(actual).Is<T>()`           |                                             |
-| `Assert.IsNotType<T>(actual)`                        | `Expect.That(actual).IsNotExactly<T>()` | [null](#negated-inspections-fail-for-null)  |
-| `Assert.IsNotType<T>(actual, exactMatch: false)`     | `Expect.That(actual).IsNot<T>()`        | [null](#negated-inspections-fail-for-null)  |
+| xUnit construct                                  | Rewritten to                            | Note                                                 |
+|--------------------------------------------------|-----------------------------------------|------------------------------------------------------|
+| `Assert.IsAssignableFrom<T>(actual)`             | `Expect.That(actual).Is<T>()`           |                                                      |
+| `Assert.IsNotAssignableFrom<T>(actual)`          | `Expect.That(actual).IsNot<T>()`        | [null subjects](#negated-inspections-fail-for-null)  |
+| `Assert.IsType<T>(actual)`                       | `Expect.That(actual).IsExactly<T>()`    |                                                      |
+| `Assert.IsType<T>(actual, exactMatch: false)`    | `Expect.That(actual).Is<T>()`           |                                                      |
+| `Assert.IsNotType<T>(actual)`                    | `Expect.That(actual).IsNotExactly<T>()` | [null subjects](#negated-inspections-fail-for-null)  |
+| `Assert.IsNotType<T>(actual, exactMatch: false)` | `Expect.That(actual).IsNot<T>()`        | [null subjects](#negated-inspections-fail-for-null)  |
 
-The non-generic overloads (`Assert.IsType(typeof(T), actual)` etc.) are migrated to the matching
-non-generic aweXpect form. An `exactMatch` argument that is not a `true` or `false` literal leaves the
-assertion for manual migration.
+The non-generic overloads (`Assert.IsType(typeof(T), actual)` etc.) are migrated to the matching non-generic aweXpect form. An `exactMatch` argument that is not a `true` or `false` literal leaves the assertion for manual migration.
 
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 
@@ -273,10 +265,7 @@ Compared with xUnit 3, a few rewritten assertions pass or fail for different inp
 
 ### Nested collections and sets
 
-`Assert.Equal` compares nested collections item by item and a set without regard to order.
-`IsEqualTo` compares the items of a collection with their `Equals` and in the order in which the
-collection enumerates them, also for a `HashSet<T>`. Use equivalency for nested collections and
-`InAnyOrder()` for sets:
+`Assert.Equal` compares nested collections item by item and a set without regard to order. `IsEqualTo` compares the items of a collection with their `Equals` and in the order in which the collection enumerates them, also for a `HashSet<T>`. Use equivalency for nested collections and `InAnyOrder()` for sets:
 
 ```csharp
 int[][] actual = // ...
@@ -290,29 +279,22 @@ await That(actualSet).IsEqualTo(expectedSet).InAnyOrder();
 
 ### Numbers of different types
 
-`Assert.Equal((object)1, (object)1L)` fails, while `IsEqualTo` on an `object` compares numbers by value
-and passes.
+`Assert.Equal((object)1, (object)1L)` fails, while `IsEqualTo` on an `object` compares numbers by value and passes.
 
 ### DateTime kinds
 
-`Assert.Equal` ignores the kind of a `DateTime`, with or without a precision. aweXpect does not compare a
-`DateTimeKind.Local` value with a `DateTimeKind.Utc` value, because the same ticks describe different
-instants, so the rewrite fails for such a pair. Convert the values with `ToUniversalTime()` first.
+`Assert.Equal` ignores the kind of a `DateTime`, with or without a precision. aweXpect does not compare a `DateTimeKind.Local` value with a `DateTimeKind.Utc` value, because the same ticks describe different instants, so the rewrite fails for such a pair. Convert the values with `ToUniversalTime()` first.
 
 ### Empty substrings throw
 
-`Assert.Contains("", actual)`, `Assert.StartsWith("", actual)` and `Assert.EndsWith("", actual)` pass for
-every string. The rewrites throw an `ArgumentException`, because an expectation that cannot fail checks
-nothing.
+`Assert.Contains("", actual)`, `Assert.StartsWith("", actual)` and `Assert.EndsWith("", actual)` pass for every string. The rewrites throw an `ArgumentException`, because an expectation that cannot fail checks nothing.
 
 ### Negated inspections fail for null
 
-`Assert.DoesNotContain("x", actual)` passes for a `null` string, and `Assert.IsNotType<T>(null)` and
-`Assert.IsNotAssignableFrom<T>(null)` pass as well. The rewrites fail, because `null` has no content or
-type to inspect. Allow `null` explicitly where it is acceptable:
+`Assert.DoesNotContain("Yesterday", actual)` passes for a `null` string, and `Assert.IsNotType<T>(null)` and `Assert.IsNotAssignableFrom<T>(null)` pass as well. The rewrites fail, because `null` has no content or type to inspect. Allow `null` explicitly where it is acceptable:
 
 ```csharp
 string? actual = // ...
 
-await That(actual).IsNull().Or.DoesNotContain("x");
+await That(actual).IsNull().Or.DoesNotContain("Yesterday");
 ```
