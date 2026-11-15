@@ -2,25 +2,39 @@
 description: The xUnit assertions that aweXpect.Migration rewrites to aweXpect, and the cases in which the rewrite behaves differently.
 ---
 
+import ApplyFix from '@site/src/components/ApplyFix';
+
 # xUnit
 
 The fixer rewrites each `Xunit.Assert.*` call into the corresponding
 `Expect.That(actual).<Assertion>(expected)` form. The argument order in xUnit
 (`Assert.Equal(expected, actual)`) is swapped to match the "actual first" convention of aweXpect.
 
-```csharp
+<ApplyFix id="aweXpectM003" migrateTo="aweXpect">
+
+```csharp title="Before (xUnit)"
 string expected = // ...
 string actual = // ...
 Action callback = // ...
 
-// Before (xUnit)
+// highlight-start
 Assert.Equal(expected, actual);
 Assert.Throws<ArgumentException>(callback);
+// highlight-end
+```
 
-// After (aweXpect)
+```csharp title="After (aweXpect)"
+string expected = // ...
+string actual = // ...
+Action callback = // ...
+
+// highlight-start
 await Expect.That(actual).IsEqualTo(expected);
 await Expect.That(callback).ThrowsExactly<ArgumentException>();
+// highlight-end
 ```
+
+</ApplyFix>
 
 A note in the last column marks a rewrite that behaves differently in some cases; it links to the matching entry under [Behavioral differences](#behavioral-differences).
 

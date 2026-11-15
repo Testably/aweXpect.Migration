@@ -2,21 +2,31 @@
 description: The FluentAssertions assertions that aweXpect.Migration rewrites to aweXpect, and the cases in which the rewrite behaves differently.
 ---
 
+import ApplyFix from '@site/src/components/ApplyFix';
+
 # FluentAssertions
 
 The fixer rewrites the entire `.Should()` chain in one step: the `Should()` call is dropped,
 `Expect.That(subject)` becomes the new root, the assertion methods are renamed, and any trailing
 `because` argument is moved into a `.Because(...)` suffix. `.And` chains are preserved.
 
-```csharp
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
 int[] subject = // ...
 
-// Before (FluentAssertions)
+// highlight-next-line
 subject.Should().Contain(1).And.Contain(2, "because foo");
+```
 
-// After (aweXpect)
+```csharp title="After (aweXpect)"
+int[] subject = // ...
+
+// highlight-next-line
 await Expect.That(subject).Contains(1).And.Contains(2).Because("because foo");
 ```
+
+</ApplyFix>
 
 The tables below are grouped by **target concept** (equality, containment and so on), not by the
 FluentAssertions documentation pages. Most of the basic assertions (`Be`, `NotBe`, `BeEmpty`, `Contain`,
@@ -249,15 +259,23 @@ For elements that are compared by value (see [Equivalency](#equivalency)) or wit
 | `.WithInnerException<T>()` / `(typeof(T))`                       | `.WithInner<T>()` / `.WithInner(typeof(T))`                  |                                                   |
 | `.WithParameterName(name)`                                       | `.WithParamName(name)`                                       |                                                   |
 
-```csharp
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
 Action callback = // ...
 
-// Before
+// highlight-next-line
 callback.Should().Throw<ArgumentException>().WithMessage("foo*");
+```
 
-// After
+```csharp title="After (aweXpect)"
+Action callback = // ...
+
+// highlight-next-line
 await Expect.That(callback).Throws<ArgumentException>().WithMessage("foo*").AsWildcard().IgnoringCase().IgnoringNewlineStyle();
 ```
+
+</ApplyFix>
 
 A chained call without an aweXpect counterpart, such as `Where(...)` or `WithInnerExceptionExactly<T>()`,
 leaves the assertion for manual migration. So does a call chained after `WithInnerException`, because
@@ -298,30 +316,44 @@ When the entire `.Should()` chain is the body of a lambda (so it is not awaited 
 surrounding signature is `Action` or `Func<T>`), the fixer wraps the rewritten expression in
 `aweXpect.Synchronous.Synchronously.Verify(...)` to keep the lambda synchronous:
 
-```csharp no-compile
-// Before
-Action action = () => true.Should().BeTrue();
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
-// After
+```csharp no-compile title="Before (FluentAssertions)"
+Action action = () => true.Should().BeTrue();
+```
+
+```csharp no-compile title="After (aweXpect)"
 Action action = () => aweXpect.Synchronous.Synchronously.Verify(Expect.That(true).IsTrue());
 ```
+
+</ApplyFix>
 
 ## Because messages
 
 A trailing `because` argument on any of the assertions above is preserved as a `.Because(...)` suffix,
 including formatted overloads:
 
-```csharp
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
 int subject = // ...
 int expected = // ...
 int value = // ...
 
-// Before
+// highlight-next-line
 subject.Should().Be(expected, "because the value is {0}", value);
+```
 
-// After
+```csharp title="After (aweXpect)"
+int subject = // ...
+int expected = // ...
+int value = // ...
+
+// highlight-next-line
 await Expect.That(subject).IsEqualTo(expected).Because($"because the value is {value}");
 ```
+
+</ApplyFix>
 
 ## Behavioral differences
 
