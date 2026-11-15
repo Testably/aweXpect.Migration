@@ -65,7 +65,7 @@ subject.Should().BeTrue();
 bool subject = // ...
 
 // highlight-next-line
-await Expect.That(subject).IsTrue();
+Expect.That(subject).IsTrue();
 ```
 
 </ApplyFix>
@@ -85,7 +85,7 @@ string expected = // ...
 string actual = // ...
 
 // highlight-next-line
-await Expect.That(actual).IsEqualTo(expected);
+Expect.That(actual).IsEqualTo(expected);
 ```
 
 </ApplyFix>

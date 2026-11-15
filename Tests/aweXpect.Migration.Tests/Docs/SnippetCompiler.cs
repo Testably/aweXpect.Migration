@@ -25,7 +25,7 @@ namespace aweXpect.Migration.Tests.Docs;
 /// </remarks>
 internal static partial class SnippetCompiler
 {
-	private const string ImplicitUsings = """
+	internal const string ImplicitUsings = """
 		global using System;
 		global using System.Collections.Generic;
 		global using System.IO;
@@ -44,8 +44,8 @@ internal static partial class SnippetCompiler
 	/// </summary>
 	private const string StatementsAfterTypes = "CS8803";
 
-	private static readonly CSharpParseOptions ParseOptions = new(LanguageVersion.Latest);
-	private static readonly Lazy<Task<MetadataReference[]>> References = new(GetReferences);
+	internal static readonly CSharpParseOptions ParseOptions = new(LanguageVersion.Latest);
+	internal static readonly Lazy<Task<MetadataReference[]>> References = new(GetReferences);
 
 	/// <summary>
 	///     Returns the compiler errors of the <paramref name="blocks" />, each prefixed with the page and line.
@@ -112,6 +112,40 @@ internal static partial class SnippetCompiler
 		source.AppendLine("#line default").AppendLine("}").AppendLine("}");
 		AppendMapped(source, block, root.Members.Where(member => member is not GlobalStatementSyntax));
 		return source.ToString();
+	}
+
+	/// <summary>
+	///     Wraps the <paramref name="code" /> of a block like <see cref="GetErrors" /> does, but as a document of its own
+	///     and without mapping it back to the page, so that two blocks wrap to the same text where their code is the same.
+	/// </summary>
+	/// <remarks>
+	///     Blank lines before a statement or type are dropped, as a fixer that adds a <c>using</c> directive moves the
+	///     blank line after the directives into the generated method.
+	/// </remarks>
+	public static string WrapAsDocument(string code)
+	{
+		CompilationUnitSyntax root = CSharpSyntaxTree.ParseText(
+				OmittedInitializer().Replace(code, "= default!; //..."), ParseOptions)
+			.GetCompilationUnitRoot();
+		StringBuilder source = new();
+		foreach (UsingDirectiveSyntax directive in root.Usings)
+		{
+			source.AppendLine(directive.ToFullString().Trim('\r', '\n'));
+		}
+
+		source.AppendLine("public class Snippet").AppendLine("{").AppendLine("public async Task Run()").AppendLine("{");
+		AppendTrimmed(source, root.Members.OfType<GlobalStatementSyntax>());
+		source.AppendLine("}").AppendLine("}");
+		AppendTrimmed(source, root.Members.Where(member => member is not GlobalStatementSyntax));
+		return source.ToString();
+
+		static void AppendTrimmed(StringBuilder source, IEnumerable<SyntaxNode> nodes)
+		{
+			foreach (SyntaxNode node in nodes)
+			{
+				source.AppendLine(node.ToFullString().Trim('\r', '\n'));
+			}
+		}
 	}
 
 	private static void AppendMapped(StringBuilder source, CodeBlock block, IEnumerable<SyntaxNode> nodes)
