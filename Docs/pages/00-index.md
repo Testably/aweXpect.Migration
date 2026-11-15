@@ -2,6 +2,7 @@
 description: Migrate the assertions of FluentAssertions and xUnit to aweXpect with the analyzers and code fixes of aweXpect.Migration.
 ---
 
+import ApplyFix from '@site/src/components/ApplyFix';
 import PackageInstall from '@site/src/components/PackageInstall';
 
 # Migration
@@ -51,19 +52,43 @@ does not recognize, keeps its warning and has to be migrated by hand.
 
 A typical migration looks like this:
 
-```csharp
+<ApplyFix id="aweXpectM002" migrateTo="aweXpect">
+
+```csharp title="Before (FluentAssertions)"
 bool subject = // ...
+
+// highlight-next-line
+subject.Should().BeTrue();
+```
+
+```csharp title="After (aweXpect)"
+bool subject = // ...
+
+// highlight-next-line
+await Expect.That(subject).IsTrue();
+```
+
+</ApplyFix>
+
+<ApplyFix id="aweXpectM003" migrateTo="aweXpect">
+
+```csharp title="Before (xUnit)"
 string expected = // ...
 string actual = // ...
 
-// Before
-subject.Should().BeTrue();
+// highlight-next-line
 Assert.Equal(expected, actual);
+```
 
-// After
-await Expect.That(subject).IsTrue();
+```csharp title="After (aweXpect)"
+string expected = // ...
+string actual = // ...
+
+// highlight-next-line
 await Expect.That(actual).IsEqualTo(expected);
 ```
+
+</ApplyFix>
 
 Expectations in aweXpect only run when they are awaited. The rewritten expressions are therefore awaited in a second
 step, which the `aweXpect0001` analyzer that ships with `aweXpect` itself enforces and fixes.
