@@ -501,18 +501,18 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 			{
 				"AtLeast.Once()" => ".AtLeast().Once()",
 				"AtLeast.Twice()" => ".AtLeast().Twice()",
-				"AtLeast.Thrice()" => ".AtLeast(3.Times())",
+				"AtLeast.Thrice()" => ".AtLeast(3)",
 				"AtMost.Once()" => ".AtMost().Once()",
 				"AtMost.Twice()" => ".AtMost().Twice()",
-				"AtMost.Thrice()" => ".AtMost(3.Times())",
+				"AtMost.Thrice()" => ".AtMost(3)",
 				"LessThan.Twice()" => ".LessThan().Twice()",
-				"LessThan.Thrice()" => ".LessThan(3.Times())",
+				"LessThan.Thrice()" => ".LessThan(3)",
 				"MoreThan.Once()" => ".MoreThan().Once()",
 				"MoreThan.Twice()" => ".MoreThan().Twice()",
-				"MoreThan.Thrice()" => ".MoreThan(3.Times())",
+				"MoreThan.Thrice()" => ".MoreThan(3)",
 				"Exactly.Once()" => ".Once()",
 				"Exactly.Twice()" => ".Twice()",
-				"Exactly.Thrice()" => ".Exactly(3.Times())",
+				"Exactly.Thrice()" => ".Exactly(3)",
 				_ => ""
 			};
 			if (TryExtract(occurrenceConstraint, "AtLeast.Times(", out string? atLeastTimes))

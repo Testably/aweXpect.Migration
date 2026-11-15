@@ -367,29 +367,28 @@ Expect.That(tracks).Contains(["Something", "Octopus's Garden"]).IgnoringInterspe
 ### Occurrence constraints on `Contain` (string subjects)
 
 `Should().Contain(expected, occurrence)` translates the full FluentAssertions occurrence family. The
-`Thrice` and `Times(n)` cases are emitted as `3.Times()` or numeric arguments, not as a chained
-`.Thrice()`. Occurrences are [counted without overlap](#occurrences-are-counted-without-overlap).
+`Thrice` and `Times(n)` cases are emitted as numeric arguments, not as a chained `.Thrice()`. Occurrences are [counted without overlap](#occurrences-are-counted-without-overlap).
 
 | FluentAssertions occurrence | Appended to the rewrite | Note                                        |
 |-----------------------------|-------------------------|---------------------------------------------|
 | `AtLeast.Once()`            | `.AtLeast().Once()`     |                                             |
 | `AtLeast.Twice()`           | `.AtLeast().Twice()`    |                                             |
-| `AtLeast.Thrice()`          | `.AtLeast(3.Times())`   |                                             |
+| `AtLeast.Thrice()`          | `.AtLeast(3)`           |                                             |
 | `AtLeast.Times(n)`          | `.AtLeast(n)`           |                                             |
 | `AtMost.Once()`             | `.AtMost().Once()`      | [null](#negated-inspections-fail-for-null)  |
 | `AtMost.Twice()`            | `.AtMost().Twice()`     | [null](#negated-inspections-fail-for-null)  |
-| `AtMost.Thrice()`           | `.AtMost(3.Times())`    | [null](#negated-inspections-fail-for-null)  |
+| `AtMost.Thrice()`           | `.AtMost(3)`            | [null](#negated-inspections-fail-for-null)  |
 | `AtMost.Times(n)`           | `.AtMost(n)`            | [null](#negated-inspections-fail-for-null)  |
 | `Exactly.Once()`            | `.Once()`               |                                             |
 | `Exactly.Twice()`           | `.Twice()`              |                                             |
-| `Exactly.Thrice()`          | `.Exactly(3.Times())`   |                                             |
+| `Exactly.Thrice()`          | `.Exactly(3)`           |                                             |
 | `Exactly.Times(n)`          | `.Exactly(n)`           |                                             |
 | `LessThan.Twice()`          | `.LessThan().Twice()`   | [null](#negated-inspections-fail-for-null)  |
-| `LessThan.Thrice()`         | `.LessThan(3.Times())`  | [null](#negated-inspections-fail-for-null)  |
+| `LessThan.Thrice()`         | `.LessThan(3)`          | [null](#negated-inspections-fail-for-null)  |
 | `LessThan.Times(n)`         | `.LessThan(n)`          | [null](#negated-inspections-fail-for-null)  |
 | `MoreThan.Once()`           | `.MoreThan().Once()`    |                                             |
 | `MoreThan.Twice()`          | `.MoreThan().Twice()`   |                                             |
-| `MoreThan.Thrice()`         | `.MoreThan(3.Times())`  |                                             |
+| `MoreThan.Thrice()`         | `.MoreThan(3)`          |                                             |
 | `MoreThan.Times(n)`         | `.MoreThan(n)`          |                                             |
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
@@ -400,6 +399,7 @@ string lyrics = // ...
 // highlight-start
 lyrics.Should().Contain("love", AtLeast.Twice());
 lyrics.Should().Contain("yesterday", Exactly.Once());
+lyrics.Should().Contain("help", AtMost.Thrice());
 // highlight-end
 ```
 
@@ -409,6 +409,7 @@ string lyrics = // ...
 // highlight-start
 Expect.That(lyrics).Contains("love").AtLeast().Twice();
 Expect.That(lyrics).Contains("yesterday").Once();
+Expect.That(lyrics).Contains("help").AtMost(3);
 // highlight-end
 ```
 

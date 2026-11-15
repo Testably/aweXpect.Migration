@@ -675,7 +675,7 @@ public static class TestCases
 			"Expect.That(subject).Contains(expected).AtLeast().Twice()");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().Contain(expected, AtLeast.Thrice(), {0})",
-			"Expect.That(subject).Contains(expected).AtLeast(3.Times())");
+			"Expect.That(subject).Contains(expected).AtLeast(3)");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().Contain(expected, AtLeast.Times(4), {0})",
 			"Expect.That(subject).Contains(expected).AtLeast(4)");
@@ -687,7 +687,7 @@ public static class TestCases
 			"Expect.That(subject).Contains(expected).AtMost().Twice()");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().Contain(expected, AtMost.Thrice(), {0})",
-			"Expect.That(subject).Contains(expected).AtMost(3.Times())");
+			"Expect.That(subject).Contains(expected).AtMost(3)");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";int expectedCount=5;",
 			"subject.Should().Contain(expected, AtMost.Times(expectedCount), {0})",
 			"Expect.That(subject).Contains(expected).AtMost(expectedCount)");
@@ -699,7 +699,7 @@ public static class TestCases
 			"Expect.That(subject).Contains(expected).Twice()");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().Contain(expected, Exactly.Thrice(), {0})",
-			"Expect.That(subject).Contains(expected).Exactly(3.Times())");
+			"Expect.That(subject).Contains(expected).Exactly(3)");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().Contain(expected, Exactly.Times(4), {0})",
 			"Expect.That(subject).Contains(expected).Exactly(4)");
@@ -708,7 +708,7 @@ public static class TestCases
 			"Expect.That(subject).Contains(expected).LessThan().Twice()");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().Contain(expected, LessThan.Thrice(), {0})",
-			"Expect.That(subject).Contains(expected).LessThan(3.Times())");
+			"Expect.That(subject).Contains(expected).LessThan(3)");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().Contain(expected, LessThan.Times(4), {0})",
 			"Expect.That(subject).Contains(expected).LessThan(4)");
@@ -720,7 +720,7 @@ public static class TestCases
 			"Expect.That(subject).Contains(expected).MoreThan().Twice()");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().Contain(expected, MoreThan.Thrice(), {0})",
-			"Expect.That(subject).Contains(expected).MoreThan(3.Times())");
+			"Expect.That(subject).Contains(expected).MoreThan(3)");
 		theoryData.AddWithBecause("string subject = \"foo\";string expected = \"bar\";",
 			"subject.Should().Contain(expected, MoreThan.Times(4), {0})",
 			"Expect.That(subject).Contains(expected).MoreThan(4)");

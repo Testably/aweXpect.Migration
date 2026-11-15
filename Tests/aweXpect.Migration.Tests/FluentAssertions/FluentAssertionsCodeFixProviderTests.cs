@@ -613,7 +613,6 @@ public class FluentAssertionsCodeFixProviderTests
 			  using System.Linq;
 			  using System.Threading.Tasks;
 			  using aweXpect;
-			  using aweXpect.Core;
 			  using FluentAssertions;
 			  using Xunit;
 
@@ -634,7 +633,6 @@ public class FluentAssertionsCodeFixProviderTests
 			  using System.Linq;
 			  using System.Threading.Tasks;
 			  using aweXpect;
-			  using aweXpect.Core;
 			  {{(aweXpect.Contains(".IgnoringCollectionOrder()") ? "using aweXpect.Equivalency;" + SourceNewLine : "")}}using FluentAssertions;
 			  using Xunit;
 
@@ -663,7 +661,6 @@ public class FluentAssertionsCodeFixProviderTests
 			  using System.Linq;
 			  using System.Threading.Tasks;
 			  using aweXpect;
-			  using aweXpect.Core;
 			  using FluentAssertions;
 			  using Xunit;
 
@@ -684,7 +681,6 @@ public class FluentAssertionsCodeFixProviderTests
 			  using System.Linq;
 			  using System.Threading.Tasks;
 			  using aweXpect;
-			  using aweXpect.Core;
 			  using FluentAssertions;
 			  using Xunit;
 
