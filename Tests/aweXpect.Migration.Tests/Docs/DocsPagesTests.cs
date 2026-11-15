@@ -19,7 +19,7 @@ public sealed class DocsPagesTests
 	{
 		int count = Pages().Sum(page => ExtractApplyFixBoxes(page).Count);
 
-		await That(count).IsGreaterThanOrEqualTo(6)
+		await That(count).IsGreaterThanOrEqualTo(20)
 			.Because("the check must not pass because it no longer finds the boxes");
 	}
 
