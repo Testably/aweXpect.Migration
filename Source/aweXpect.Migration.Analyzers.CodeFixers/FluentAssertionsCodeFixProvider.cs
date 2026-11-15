@@ -164,11 +164,15 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 			return await BeEquivalentToItems(context, methodSymbol, actual, methods, arguments, isEqualTo);
 		}
 
+		if (HasUntranslatableOptions(methodSymbol, parameterType, options))
+		{
+			return null;
+		}
+
 		if (IsString(parameterType))
 		{
-			string stringSuffix = options is null ? ".IgnoringCase()" : GetStringOptionsSuffix(optionsText);
 			return await ParseExpressionWithBecauseSupport(context, actual, arguments,
-				$".{isEqualTo}({expected})" + stringSuffix,
+				$".{isEqualTo}({expected})" + GetStringEquivalencySuffix(options),
 				methods, becauseIndex);
 		}
 
@@ -261,6 +265,58 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		}
 
 		return suffix;
+	}
+
+	/// <summary>
+	///     FluentAssertions ignores the casing of a string compared without options.
+	/// </summary>
+	private static string GetStringEquivalencySuffix(ArgumentSyntax? options)
+		=> options is null ? ".IgnoringCase()" : GetStringOptionsSuffix(options.ToString());
+
+	/// <summary>
+	///     Strings and collections compared by value are rewritten to an equality, which takes only the string options
+	///     and the ordering.
+	/// </summary>
+	private static bool HasUntranslatableOptions(IMethodSymbol methodSymbol, ITypeSymbol parameterType,
+		ArgumentSyntax? options)
+		=> (IsString(parameterType) || IsCollectionWithValueSemantics(methodSymbol, parameterType)) &&
+		   !HasOnlyStringOrOrderingOptions(options);
+
+	/// <summary>
+	///     Checks that the equivalency options are a lambda that only chains the string options and the ordering, which
+	///     the rewrite translates, as any other option would be lost.
+	/// </summary>
+	private static bool HasOnlyStringOrOrderingOptions(ArgumentSyntax? options)
+	{
+		if (options is null)
+		{
+			return true;
+		}
+
+		if (options.Expression is not SimpleLambdaExpressionSyntax { ExpressionBody: { } expression, } lambda)
+		{
+			return false;
+		}
+
+		while (expression is InvocationExpressionSyntax
+		       {
+			       ArgumentList.Arguments.Count: 0,
+			       Expression: MemberAccessExpressionSyntax
+			       {
+				       Name: IdentifierNameSyntax
+				       {
+					       Identifier.ValueText: "IgnoringCase" or "IgnoringLeadingWhitespace"
+					       or "IgnoringTrailingWhitespace" or "IgnoringNewlineStyle"
+					       or "WithStrictOrdering" or "WithoutStrictOrdering",
+				       },
+			       } memberAccess,
+		       })
+		{
+			expression = memberAccess.Expression;
+		}
+
+		return expression is IdentifierNameSyntax receiver &&
+		       receiver.Identifier.ValueText == lambda.Parameter.Identifier.ValueText;
 	}
 
 	/// <summary>
@@ -454,6 +510,11 @@ public class FluentAssertionsCodeFixProvider() : AssertionCodeFixProvider(Rules.
 		ITypeSymbol expectationType = methodSymbol.Parameters[0].Type;
 		if (IsString(expectationType))
 		{
+			if (!HasOnlyStringOrOrderingOptions(options))
+			{
+				return null;
+			}
+
 			string optionsText = options?.ToString() ?? "";
 			return await ParseExpressionWithBecauseSupport(context, actual, arguments,
 				$".All().AreEqualTo({expected})" +

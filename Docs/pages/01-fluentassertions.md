@@ -120,7 +120,7 @@ Items are compared by value when FluentAssertions compares them with `Equals` as
 
 Unlike a single string, the strings in a collection are compared case-sensitively, as in FluentAssertions. The expected strings can also be listed one by one: `BeEquivalentTo("Something", "Come Together")` rewrites to `IsEqualTo(["Something", "Come Together"]).InAnyOrder()`. Without any expected string (`BeEquivalentTo()` or `BeEquivalentTo([])`) no code fix is offered.
 
-For string subjects the `o => o...` options are translated as well. As in FluentAssertions, a string compared with options ignores case only when the options contain `IgnoringCase()`:
+For string subjects and collections of items that are compared by value, the `o => o...` options are translated as well. As in FluentAssertions, a string compared with options ignores case only when the options contain `IgnoringCase()`:
 
 | FluentAssertions option               | Appended to the rewrite         |
 |---------------------------------------|---------------------------------|
@@ -129,7 +129,7 @@ For string subjects the `o => o...` options are translated as well. As in Fluent
 | `o => o.IgnoringTrailingWhitespace()` | `.IgnoringTrailingWhiteSpace()` |
 | `o => o.IgnoringNewlineStyle()`       | `.IgnoringNewlineStyle()`       |
 
-For structural comparisons, options other than `WithStrictOrdering()` and `WithoutStrictOrdering()` have no automatic translation, so no code fix is offered. `NotBeEquivalentTo` is translated symmetrically (`IsNotEqualTo` / `IsNotEquivalentTo`). See also [Structural equivalency](./02-fluentassertions-differences.md#structural-equivalency) under the behavioral differences.
+For these, the code fix translates only an `o => o...` lambda that chains the options above, `WithStrictOrdering()` and `WithoutStrictOrdering()`. For structural comparisons and objects that are compared by value, options other than `WithStrictOrdering()` and `WithoutStrictOrdering()` have no automatic translation. Any other option, such as `Using<T>(...)`, or options that are not passed as such a lambda, would be lost in the rewrite, so no code fix is offered. `NotBeEquivalentTo` is translated symmetrically (`IsNotEqualTo` / `IsNotEquivalentTo`). See also [Structural equivalency](./02-fluentassertions-differences.md#structural-equivalency) under the behavioral differences.
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 
@@ -417,6 +417,8 @@ For elements that are compared by value (see [Equivalency](#equivalency)), `AllB
 | `o => o.IgnoringTrailingWhitespace()` | `.IgnoringTrailingWhiteSpace()` |
 | `o => o.IgnoringNewlineStyle()`       | `.IgnoringNewlineStyle()`       |
 | `o => o.WithoutStrictOrdering()`      | `.InAnyOrder()`                 |
+
+Options that are not such a lambda, or any other option, such as `Using<T>(...)`, would be lost in the rewrite, so no code fix is offered.
 
 <ApplyFix id="aweXpectM002" migrateTo="aweXpect">
 

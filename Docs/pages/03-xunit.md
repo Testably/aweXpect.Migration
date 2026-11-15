@@ -105,7 +105,7 @@ Fail.Test("The album has no tracks");
 | `Assert.Equal(expected, actual, precision)` (double / float / decimal)    | `Expect.That(Math.Round(actual, precision)).IsEqualTo(Math.Round(expected, precision))`    |                                                                                                                         |
 | `Assert.NotEqual(expected, actual, precision)` (double / float / decimal) | `Expect.That(Math.Round(actual, precision)).IsNotEqualTo(Math.Round(expected, precision))` |                                                                                                                         |
 
-The precision of xUnit rounds both values to the given number of decimal places, which no tolerance can express, so the rewrite rounds them the same way. A `MidpointRounding` argument is passed on to `Math.Round`, and a using for `System` is added when necessary. Any other additional argument, such as a comparer, `ignoreCase: true` or a `StringComparison` on `Assert.Contains`, leaves the assertion for manual migration.
+The precision of xUnit rounds both values to the given number of decimal places, which no tolerance can express, so the rewrite rounds them the same way. A `MidpointRounding` argument is passed on to `Math.Round`, and a using for `System` is added when necessary. Any other additional argument, such as a comparer or `ignoreCase: true`, leaves the assertion for manual migration.
 
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 
@@ -136,6 +136,8 @@ Expect.That(Math.Round(duration, 1)).IsEqualTo(Math.Round(47.1, 1));
 | `Assert.Empty(actual)`                      | `Expect.That(actual).IsEmpty()`                  |                                                      |
 | `Assert.NotEmpty(actual)`                   | `Expect.That(actual).IsNotEmpty()`               |                                                      |
 
+A constant `StringComparison` on `Assert.Contains`, `Assert.DoesNotContain`, `Assert.StartsWith` or `Assert.EndsWith` is translated when aweXpect compares the same way: `StringComparison.Ordinal` adds nothing and `StringComparison.OrdinalIgnoreCase` appends `.IgnoringCase()`. A culture-sensitive comparison, such as `StringComparison.CurrentCultureIgnoreCase`, or a comparison that is not a constant leaves the assertion for manual migration.
+
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 
 ```csharp title="Before (xUnit)"
@@ -144,6 +146,7 @@ string title = // ...
 // highlight-start
 Assert.Contains("Road", title);
 Assert.EndsWith("Road", title);
+Assert.StartsWith("ABBEY", title, StringComparison.OrdinalIgnoreCase);
 // highlight-end
 ```
 
@@ -153,6 +156,7 @@ string title = // ...
 // highlight-start
 Expect.That(title).Contains("Road");
 Expect.That(title).EndsWith("Road");
+Expect.That(title).StartsWith("ABBEY").IgnoringCase();
 // highlight-end
 ```
 

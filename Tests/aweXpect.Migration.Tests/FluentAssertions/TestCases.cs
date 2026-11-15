@@ -454,6 +454,20 @@ public static class TestCases
 			"subject.Should().BeEquivalentTo(expected, o => o.WithStrictOrdering().Excluding(e => e.Message))"));
 		theoryData.Add(("object[] subject = [];object expected = new();",
 			"subject.Should().ContainEquivalentOf(expected, o => o.Excluding(e => e.GetType()))"));
+		theoryData.Add(("int[] subject = [];int[] expected = [];",
+			"subject.Should().BeEquivalentTo(expected, o => o.Using<int>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1)).WhenTypeIs<int>())"));
+		theoryData.Add(("int[] subject = [];int[] unexpected = [];",
+			"subject.Should().NotBeEquivalentTo(unexpected, o => o.WithStrictOrdering().Using<int>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1)).WhenTypeIs<int>())"));
+		theoryData.Add(("string[] subject = [];string[] expected = [];",
+			"subject.Should().BeEquivalentTo(expected, o => o.IgnoringCase().Using<string>(ctx => ctx.Subject.Should().StartWith(ctx.Expectation)).WhenTypeIs<string>())"));
+		theoryData.Add(("int[] subject = [];int[] expected = [];Func<FluentAssertions.Equivalency.EquivalencyOptions<int>, FluentAssertions.Equivalency.EquivalencyOptions<int>> config = o => o.WithStrictOrdering();",
+			"subject.Should().BeEquivalentTo(expected, config)"));
+		theoryData.Add(("string subject = \"foo\";Func<FluentAssertions.Equivalency.EquivalencyOptions<string>, FluentAssertions.Equivalency.EquivalencyOptions<string>> config = o => o.IgnoringCase();",
+			"subject.Should().BeEquivalentTo(\"bar\", config)"));
+		theoryData.Add(("string subject = \"foo\";",
+			"subject.Should().BeEquivalentTo(\"bar\", o => o.IgnoringCase().Using<string>(ctx => ctx.Subject.Should().StartWith(ctx.Expectation)).WhenTypeIs<string>())"));
+		theoryData.Add(("string[] subject = [];",
+			"subject.Should().AllBeEquivalentTo(\"2\", o => o.IgnoringCase().Using<string>(ctx => ctx.Subject.Should().StartWith(ctx.Expectation)).WhenTypeIs<string>())"));
 		theoryData.Add(("int subject = 1;",
 			"subject.Should().BeCloseTo(1, uint.MaxValue)"));
 		theoryData.Add(("int subject = 1;",
