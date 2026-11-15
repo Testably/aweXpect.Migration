@@ -1,12 +1,12 @@
 ---
-description: The xUnit assertions that aweXpect.Migration rewrites to aweXpect, and the cases in which the rewrite behaves differently.
+description: The xUnit assertions that aweXpect.Migration rewrites to aweXpect.
 ---
 
 import ApplyFix from '@site/src/components/ApplyFix';
 
 # xUnit
 
-The code fix rewrites each `Xunit.Assert.*` call into the corresponding `Expect.That(actual).<Assertion>(expected)` form. The argument order in xUnit (`Assert.Equal(expected, actual)`) is swapped to match the "actual first" convention of aweXpect.
+The code fix of `aweXpectM003` rewrites each `Xunit.Assert.*` call into the corresponding `Expect.That(actual).<Assertion>(expected)` form and swaps the argument order of xUnit (`Assert.Equal(expected, actual)`) to the "actual first" convention of aweXpect.
 
 <ApplyFix id="aweXpectM003" migrateTo="aweXpect">
 
@@ -56,9 +56,9 @@ Expect.That(play).ThrowsExactly<InvalidOperationException>();
 
 </ApplyFix>
 
-The examples show the code as the code fix writes it; the `await` is added in a [second step](./00-index.md#how-it-works).
+The examples show the code as the code fix writes it; the `await` is added in a [second step](./00-index.md#recommended-workflow).
 
-A note in the last column marks a rewrite that behaves differently in some cases; it links to the matching entry under [Behavioral differences](#behavioral-differences).
+A note in the last column marks a rewrite that behaves differently in some cases; it links to the matching entry on [Behavioral differences from xUnit](./04-xunit-differences.md).
 
 ## Basic
 
@@ -98,9 +98,9 @@ Fail.Test("The album has no tracks");
 
 | xUnit construct                                                           | Rewritten to                                                                               | Note                                                                                                                    |
 |---------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `Assert.Equal(expected, actual)`                                          | `Expect.That(actual).IsEqualTo(expected)`                                                  | [nested collections](#nested-collections-and-sets), [mixed number types](#numbers-of-different-types), [DateTime kind](#datetime-kinds) |
+| `Assert.Equal(expected, actual)`                                          | `Expect.That(actual).IsEqualTo(expected)`                                                  | [nested collections](./04-xunit-differences.md#nested-collections-and-sets), [mixed number types](./04-xunit-differences.md#numbers-of-different-types), [DateTime kind](./04-xunit-differences.md#datetime-kinds) |
 | `Assert.NotEqual(expected, actual)`                                       | `Expect.That(actual).IsNotEqualTo(expected)`                                               |                                                                                                                         |
-| `Assert.Equal(expected, actual, tolerance)` (double / float / TimeSpan)   | `Expect.That(actual).IsEqualTo(expected).Within(tolerance)`                                | [DateTime kind](#datetime-kinds)                                                                                        |
+| `Assert.Equal(expected, actual, tolerance)` (double / float / TimeSpan)   | `Expect.That(actual).IsEqualTo(expected).Within(tolerance)`                                | [DateTime kind](./04-xunit-differences.md#datetime-kinds)                                                                                        |
 | `Assert.NotEqual(expected, actual, tolerance)` (double / float)           | `Expect.That(actual).IsNotEqualTo(expected).Within(tolerance)`                             |                                                                                                                         |
 | `Assert.Equal(expected, actual, precision)` (double / float / decimal)    | `Expect.That(Math.Round(actual, precision)).IsEqualTo(Math.Round(expected, precision))`    |                                                                                                                         |
 | `Assert.NotEqual(expected, actual, precision)` (double / float / decimal) | `Expect.That(Math.Round(actual, precision)).IsNotEqualTo(Math.Round(expected, precision))` |                                                                                                                         |
@@ -129,10 +129,10 @@ Expect.That(Math.Round(duration, 1)).IsEqualTo(Math.Round(47.1, 1));
 
 | xUnit construct                             | Rewritten to                                     | Note                                                 |
 |---------------------------------------------|--------------------------------------------------|------------------------------------------------------|
-| `Assert.Contains(expected, actual)`         | `Expect.That(actual).Contains(expected)`         | [empty substrings](#empty-substrings-throw)          |
-| `Assert.DoesNotContain(unexpected, actual)` | `Expect.That(actual).DoesNotContain(unexpected)` | [null subjects](#negated-inspections-fail-for-null)  |
-| `Assert.StartsWith(expected, actual)`       | `Expect.That(actual).StartsWith(expected)`       | [empty substrings](#empty-substrings-throw)          |
-| `Assert.EndsWith(expected, actual)`         | `Expect.That(actual).EndsWith(expected)`         | [empty substrings](#empty-substrings-throw)          |
+| `Assert.Contains(expected, actual)`         | `Expect.That(actual).Contains(expected)`         | [empty substrings](./04-xunit-differences.md#empty-substrings-throw)          |
+| `Assert.DoesNotContain(unexpected, actual)` | `Expect.That(actual).DoesNotContain(unexpected)` | [null subjects](./04-xunit-differences.md#negated-inspections-fail-for-null)  |
+| `Assert.StartsWith(expected, actual)`       | `Expect.That(actual).StartsWith(expected)`       | [empty substrings](./04-xunit-differences.md#empty-substrings-throw)          |
+| `Assert.EndsWith(expected, actual)`         | `Expect.That(actual).EndsWith(expected)`         | [empty substrings](./04-xunit-differences.md#empty-substrings-throw)          |
 | `Assert.Empty(actual)`                      | `Expect.That(actual).IsEmpty()`                  |                                                      |
 | `Assert.NotEmpty(actual)`                   | `Expect.That(actual).IsNotEmpty()`               |                                                      |
 
@@ -229,11 +229,11 @@ Expect.That(play).Throws<InvalidOperationException>();
 | xUnit construct                                  | Rewritten to                            | Note                                                 |
 |--------------------------------------------------|-----------------------------------------|------------------------------------------------------|
 | `Assert.IsAssignableFrom<T>(actual)`             | `Expect.That(actual).Is<T>()`           |                                                      |
-| `Assert.IsNotAssignableFrom<T>(actual)`          | `Expect.That(actual).IsNot<T>()`        | [null subjects](#negated-inspections-fail-for-null)  |
+| `Assert.IsNotAssignableFrom<T>(actual)`          | `Expect.That(actual).IsNot<T>()`        | [null subjects](./04-xunit-differences.md#negated-inspections-fail-for-null)  |
 | `Assert.IsType<T>(actual)`                       | `Expect.That(actual).IsExactly<T>()`    |                                                      |
 | `Assert.IsType<T>(actual, exactMatch: false)`    | `Expect.That(actual).Is<T>()`           |                                                      |
-| `Assert.IsNotType<T>(actual)`                    | `Expect.That(actual).IsNotExactly<T>()` | [null subjects](#negated-inspections-fail-for-null)  |
-| `Assert.IsNotType<T>(actual, exactMatch: false)` | `Expect.That(actual).IsNot<T>()`        | [null subjects](#negated-inspections-fail-for-null)  |
+| `Assert.IsNotType<T>(actual)`                    | `Expect.That(actual).IsNotExactly<T>()` | [null subjects](./04-xunit-differences.md#negated-inspections-fail-for-null)  |
+| `Assert.IsNotType<T>(actual, exactMatch: false)` | `Expect.That(actual).IsNot<T>()`        | [null subjects](./04-xunit-differences.md#negated-inspections-fail-for-null)  |
 
 The non-generic overloads (`Assert.IsType(typeof(T), actual)` etc.) are migrated to the matching non-generic aweXpect form. An `exactMatch` argument that is not a `true` or `false` literal leaves the assertion for manual migration.
 
@@ -261,40 +261,4 @@ Expect.That(error).Is<ArgumentException>();
 
 ## Behavioral differences
 
-Compared with xUnit 3, a few rewritten assertions pass or fail for different inputs than the original. These follow from the rules listed under [Behavioral differences](./01-fluentassertions.md#behavioral-differences) for FluentAssertions.
-
-### Nested collections and sets
-
-`Assert.Equal` compares nested collections item by item and a set without regard to order. `IsEqualTo` compares the items of a collection with their `Equals` and in the order in which the collection enumerates them, also for a `HashSet<T>`. Use equivalency for nested collections and `InAnyOrder()` for sets:
-
-```csharp
-int[][] actual = // ...
-int[][] expected = // ...
-HashSet<int> actualSet = // ...
-HashSet<int> expectedSet = // ...
-
-await That(actual).IsEquivalentTo(expected);
-await That(actualSet).IsEqualTo(expectedSet).InAnyOrder();
-```
-
-### Numbers of different types
-
-`Assert.Equal((object)1, (object)1L)` fails, while `IsEqualTo` on an `object` compares numbers by value and passes.
-
-### DateTime kinds
-
-`Assert.Equal` ignores the kind of a `DateTime`, with or without a precision. aweXpect does not compare a `DateTimeKind.Local` value with a `DateTimeKind.Utc` value, because the same ticks describe different instants, so the rewrite fails for such a pair. Convert the values with `ToUniversalTime()` first.
-
-### Empty substrings throw
-
-`Assert.Contains("", actual)`, `Assert.StartsWith("", actual)` and `Assert.EndsWith("", actual)` pass for every string. The rewrites throw an `ArgumentException`, because an expectation that cannot fail checks nothing.
-
-### Negated inspections fail for null
-
-`Assert.DoesNotContain("Yesterday", actual)` passes for a `null` string, and `Assert.IsNotType<T>(null)` and `Assert.IsNotAssignableFrom<T>(null)` pass as well. The rewrites fail, because `null` has no content or type to inspect. Allow `null` explicitly where it is acceptable:
-
-```csharp
-string? actual = // ...
-
-await That(actual).IsNull().Or.DoesNotContain("Yesterday");
-```
+A few rewrites pass or fail for different inputs than the original xUnit assertion, by a deliberate choice of aweXpect. Each case is listed with a way to restore the original behavior on [Behavioral differences from xUnit](./04-xunit-differences.md).
